@@ -1,0 +1,158 @@
+// SPDX-License-Identifier: --🦉--
+
+pragma solidity =0.7.6;
+
+import "./Declaration.sol";
+
+abstract contract Helper is Declaration {
+
+    using SafeMath for uint256;
+
+    function notContract(address _addr) internal view returns (bool) {
+        uint32 size;
+        assembly {
+            size := extcodesize(_addr)
+        }
+        return (size == 0);
+    }
+
+    function toBytes16(uint256 x) internal pure returns (bytes16 b) {
+       return bytes16(bytes32(x));
+    }
+
+    function generateID(address x, uint256 y, bytes1 z) public pure returns (bytes16 b) {
+        b = toBytes16(
+            uint256(
+                keccak256(
+                    abi.encodePacked(x, y, z)
+                )
+            )
+        );
+    }
+
+    function generateStakeID(address _staker) internal view returns (bytes16 stakeID) {
+        return generateID(_staker, stakeCount[_staker], 0x01);
+    }
+
+    function currentGriseDay() internal view returns (uint64) {
+        return GRISE_CONTRACT.currentGriseDay();
+    }
+
+    function latestStakeID(address _staker) external view returns (bytes16) {
+        return stakeCount[_staker] == 0 ? bytes16(0) : generateID(_staker, stakeCount[_staker].sub(1), 0x01);
+    }
+
+    function _increaseStakeCount(address _staker) internal {
+        stakeCount[_staker] = stakeCount[_staker] + 1;
+    }
+
+    function _isMatureStake(Stake memory _stake) internal view returns (bool) {
+        return _stake.closeDay > 0
+            ? _stake.finalDay <= _stake.closeDay
+            : _stake.finalDay <= currentGriseDay();
+    }
+
+    function _stakeNotStarted(Stake memory _stake) internal view returns (bool) {
+        return _stake.closeDay > 0
+            ? _stake.startDay > _stake.closeDay
+            : _stake.startDay > currentGriseDay();
+    }
+
+    function _stakeEnded(Stake memory _stake) internal view returns (bool) {
+        return _stake.isActive == false || _isMatureStake(_stake);
+    }
+
+    function _daysLeft(Stake memory _stake) internal view returns (uint256) {
+        return _stake.isActive == false
+            ? _daysDiff(_stake.closeDay, _stake.finalDay)
+            : _daysDiff(currentGriseDay(), _stake.finalDay);
+    }
+
+    function _daysDiff(uint256 _startDate, uint256 _endDate) internal pure returns (uint256) {
+        return _startDate > _endDate ? 0 : _endDate.sub(_startDate);
+    }
+
+    function _calculationDay(Stake memory _stake) internal view returns (uint256) {
+        return _stake.finalDay > globals.currentGriseDay ? globals.currentGriseDay : _stake.finalDay;
+    }
+
+    function _startingDay(Stake memory _stake) internal pure returns (uint256) {
+        return _stake.scrapeDay == 0 ? _stake.startDay : _stake.scrapeDay;
+    }
+
+    function _notFuture(uint256 _day) internal view returns (bool) {
+        return _day <= currentGriseDay();
+    }
+
+    function _notPast(uint256 _day) internal view returns (bool) {
+        return _day >= currentGriseDay();
+    }
+
+    function _nonZeroAddress(address _address) internal pure returns (bool) {
+        return _address != address(0x0);
+    }
+
+    function _getLockDays(Stake memory _stake) internal pure returns (uint256) {
+        return
+            _stake.lockDays > 1 ?
+            _stake.lockDays - 1 : 1;
+    }
+
+    function _preparePath(
+        address _tokenAddress,
+        address _GriseAddress
+    )
+        internal
+        pure
+        returns (address[] memory _path)
+    {
+        _path = new address[](3);
+        _path[0] = _tokenAddress;
+        _path[1] = WETH;
+        _path[2] = _GriseAddress;
+    }
+
+    function safeTransfer(
+        address token,
+        address to,
+        uint256 value
+    )
+        internal
+    {
+        (bool success, bytes memory data) = token.call(
+            abi.encodeWithSelector(
+                0xa9059cbb,
+                to,
+                value
+            )
+        );
+
+        require(
+            success && (data.length == 0 || abi.decode(data, (bool))),
+            'GRISE: transfer failed'
+        );
+    }
+
+    function safeTransferFrom(
+        address token,
+        address from,
+        address to,
+        uint value
+    )
+        internal
+    {
+        (bool success, bytes memory data) = token.call(
+            abi.encodeWithSelector(
+                0x23b872dd,
+                from,
+                to,
+                value
+            )
+        );
+
+        require(
+            success && (data.length == 0 || abi.decode(data, (bool))),
+            'GRISE: transferFrom failed'
+        );
+    }
+}
