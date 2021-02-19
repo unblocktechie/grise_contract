@@ -37,8 +37,9 @@ contract Events {
     event NewGlobals(
         uint256 totalShares,
         uint256 totalStaked,
+        uint256 shortTermshare,
+        uint256 MediumTermshare,
         uint256 shareRate,
         uint256 indexed currentGriseDay
     );
-
 }

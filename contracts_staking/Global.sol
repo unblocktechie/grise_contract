@@ -13,6 +13,8 @@ abstract contract Global is Events {
     struct Globals {
         uint256 totalStaked;
         uint256 totalShares;
+        uint256 shortTermShares;
+        uint256 mediumTermShares; // Medium Term and Large Term Shares counter
         uint256 sharePrice;
         uint256 currentGriseDay;
     }
@@ -24,6 +26,7 @@ abstract contract Global is Events {
     }
 
     function _increaseGlobals(
+        uint8 _stakeType, 
         uint256 _staked,
         uint256 _shares
     )
@@ -35,10 +38,19 @@ abstract contract Global is Events {
         globals.totalShares =
         globals.totalShares.add(_shares);
 
+        if (_stakeType > 0) {
+            globals.mediumTermShares = 
+                globals.mediumTermShares.add(_shares);
+        }else {
+            globals.shortTermShares = 
+                globals.shortTermShares.add(_shares);
+        }
+
         _logGlobals();
     }
 
     function _decreaseGlobals(
+        uint8 _stakeType,
         uint256 _staked,
         uint256 _shares
     )
@@ -52,6 +64,17 @@ abstract contract Global is Events {
         globals.totalShares > _shares ?
         globals.totalShares - _shares : 0;
 
+        if (_stakeType > 0) {
+            globals.mediumTermShares = 
+                globals.mediumTermShares > _shares ?
+                globals.mediumTermShares - _shares : 0;
+        }else {            
+            globals.shortTermShares = 
+                globals.shortTermShares > _shares ?
+                globals.shortTermShares - _shares : 0;
+
+        }
+        
         _logGlobals();
     }
 
@@ -61,6 +84,8 @@ abstract contract Global is Events {
         emit NewGlobals(
             globals.totalShares,
             globals.totalStaked,
+            globals.shortTermShares,
+            globals.mediumTermShares,
             globals.sharePrice,
             globals.currentGriseDay
         );

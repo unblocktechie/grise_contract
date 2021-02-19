@@ -134,6 +134,7 @@ contract StakingToken is Snapshot {
         );
 
         _increaseGlobals(
+            uint8(newStake.stakeType),
             newStake.stakedAmount,
             newStake.stakesShares
         );
@@ -143,9 +144,13 @@ contract StakingToken is Snapshot {
             newStake.stakesShares
         );
 
-        GRISE_CONTRACT.updateStakedToken(globals.totalStaked);
         GRISE_CONTRACT.setStaker(msg.sender);
+        GRISE_CONTRACT.updateStakedToken(globals.totalStaked);
 
+        if (newStake.stakeType != StakeType.SHORT_TERM) {
+            GRISE_CONTRACT.updateMedTermShares(globals.mediumTermShares);
+        }
+        
         emit StakeStart(
             stakeID,
             msg.sender,
@@ -231,6 +236,7 @@ contract StakingToken is Snapshot {
         );
 
         _decreaseGlobals(
+            uint8(endedStake.stakeType),
             endedStake.stakedAmount,
             endedStake.stakesShares
         );
@@ -257,8 +263,12 @@ contract StakingToken is Snapshot {
         stakeCaps[endedStake.stakeType][stakingSlot].stakingSlotCount = 
         stakeCaps[endedStake.stakeType][stakingSlot].stakingSlotCount.sub(endedStake.totalOccupiedSlot);
         
-        GRISE_CONTRACT.updateStakedToken(globals.totalStaked);
         GRISE_CONTRACT.resetStaker(msg.sender);
+        GRISE_CONTRACT.updateStakedToken(globals.totalStaked);
+
+        if (endedStake.stakeType != StakeType.SHORT_TERM) {
+            GRISE_CONTRACT.updateMedTermShares(globals.mediumTermShares);
+        }
         
         emit StakeEnd(
             _stakeID,
@@ -320,8 +330,7 @@ contract StakingToken is Snapshot {
         returns (
             uint256 scrapeDay,
             uint256 scrapeAmount,
-            uint256 remainingDays,
-            uint256 stakersPenalty
+            uint256 remainingDays
         )
     {
         require(
@@ -344,7 +353,7 @@ contract StakingToken is Snapshot {
             ? scrapeDay.sub(scrapeDay.mod(GRISE_WEEK))
             : scrapeDay;
 
-        scrapeAmount = _loopPanaltyRewardAmount(
+        scrapeAmount = _loopPenaltyRewardAmount(
             stake.stakesShares,
             _startingDay(stake),
             scrapeDay,
@@ -512,7 +521,7 @@ contract StakingToken is Snapshot {
         returns (uint256 _rewardAmount)
     {
 
-        _rewardAmount = _loopPanalityRewardAmount(
+        _rewardAmount = _loopPenaltyRewardAmount(
             _stake.stakesShares,
             _startingDay(_stake),
             _calculationDay(_stake),
