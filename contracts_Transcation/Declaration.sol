@@ -30,14 +30,18 @@ abstract contract Declaration is Context, Events {
 
     uint32 constant SECONDS_IN_DAY = 86400 seconds; // 24 hours
     uint32 constant SECONDS_IN_DAY_LP = 240 seconds; // 4 hours
+    uint32 constant GRISE_WEEK = 7;
+    uint32 constant GRISE_MONTH = 4 * GRISE_WEEK;
+    uint32 constant GRISE_YEAR = 12 * GRISE_MONTH;
+
     uint64 constant PRECISION_RATE = 1E18;
     uint16 constant REWARD_PRECISION_RATE = 1E4;
     uint256 immutable LAUNCH_TIME;
     
     uint16 constant SELL_TRANS_FEE = 347; // 3.47% multiple 1E4 Precision
-    uint16 constant RESERVOIR_REWARD = 3115;
-    uint16 constant STAKER_REWARD = 1633;
-    uint16 constant TOKEN_HOLDER_REWARD = 2612;
+    uint16 constant TRANSC_RESERVOIR_REWARD = 3115;
+    uint16 constant TRANSC_STAKER_REWARD = 1633;
+    uint16 constant TRANSC_TOKEN_HOLDER_REWARD = 2612;
     uint16 constant TEAM_SELL_TRANSC_REWARD = 1431;
     uint16 constant SELL_TRANS_BURN = 1209;
     
@@ -54,12 +58,12 @@ abstract contract Declaration is Context, Events {
 
 
     uint256 internal stakedToken;
-    mapping(uint256 => uint256) internal sellTranscFee;  // week ==> weekly Accumalted transc fee
-    mapping(uint256 => uint256) internal reservoirReward;
-    mapping(uint256 => uint256) internal stakerReward;
+    uint256 internal mediumTermShares;
+    mapping(uint256 => uint256) public sellTranscFee;  // week ==> weekly Accumalted transc fee
+    mapping(uint256 => uint256) internal reservoirRewardPerShare;
+    mapping(uint256 => uint256) internal stakerRewardPerShare;
     mapping(uint256 => uint256) internal tokenHolderReward;
     mapping(address => mapping(uint256 => bool)) internal isTranscFeeClaimed;
     mapping(uint256 => uint256) internal totalToken;
     mapping(address => bool) public isStaker;
-
 }

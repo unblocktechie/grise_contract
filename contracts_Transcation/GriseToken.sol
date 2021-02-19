@@ -11,10 +11,14 @@ contract GriseToken is Utils {
     mapping (address => uint256) private _balances;
     mapping (address => mapping (address => uint256)) private _allowances;
 
-    address public LIQUIDITY_TRANSFORMER;
-    address public transformerGateKeeper;
-    address public STAKE_TRANSFORMER;
+    address public LIQUIDITY_GATEKEEPER;
+    address public STAKE_GATEKEEPER;
+    address public VAULT_GATEKEEPER;
+
+    address public liquidtyGateKeeper;
     address public stakeGateKeeper;
+    address public vaultGateKeeper;
+
 
     /**
      * @dev initial private
@@ -43,9 +47,9 @@ contract GriseToken is Utils {
     constructor (string memory tokenName, string memory tokenSymbol) {
         _name = tokenName;
         _symbol = tokenSymbol;
-        transformerGateKeeper = msg.sender;
+        liquidtyGateKeeper = msg.sender;
         stakeGateKeeper = msg.sender;
-        
+        vaultGateKeeper = msg.sender;
     }
 
     /**
@@ -90,7 +94,7 @@ contract GriseToken is Utils {
         public
         returns (bool)
     {
-        amount = amount.mul(TEMP_PRECISION);
+        // amount = amount.mul(TEMP_PRECISION);
         
         _transfer(
             _msgSender(),
@@ -192,29 +196,31 @@ contract GriseToken is Utils {
         uint256 stFee;
         uint256 btFee;
         uint256 teamReward;
-        
+        uint256 currentGriseDay = _currentGriseDay();
+
         if (!isStaker[sender]) {
-            uint256 GriseWeek = currentGriseWeek();
-            uint256 GriseQuater = (GriseWeek.mod(4) != 0)?
-                                    GriseWeek.div(4).add(1) :
-                                    GriseWeek.div(4);
-            
             stFee = _calculateSellTranscFee(amount);
 
-            sellTranscFee[GriseWeek] = 
-            sellTranscFee[GriseWeek].add(stFee);
-            
-            reservoirReward[GriseQuater] = 
-            reservoirReward[GriseQuater].add(stFee.mul(RESERVOIR_REWARD)
-                                        .div(REWARD_PRECISION_RATE));
-            
-            stakerReward[GriseWeek] = 
-            stakerReward[GriseWeek].add(stFee.mul(STAKER_REWARD)
-                                   .div(REWARD_PRECISION_RATE));
-            
-            tokenHolderReward[GriseWeek] = 
-            tokenHolderReward[GriseWeek].add(stFee.mul(TOKEN_HOLDER_REWARD)
-                                        .div(REWARD_PRECISION_RATE));
+            sellTranscFee[currentGriseDay] = 
+            sellTranscFee[currentGriseDay]
+                        .add(stFee);
+                
+            reservoirRewardPerShare[currentGriseDay] = 
+            reservoirRewardPerShare[currentGriseDay]
+                        .add(stFee.mul(TRANSC_RESERVOIR_REWARD)
+                        .div(REWARD_PRECISION_RATE)
+                        .div(mediumTermShares));
+                
+            stakerRewardPerShare[currentGriseDay] = 
+            stakerRewardPerShare[currentGriseDay]
+                        .add(stFee.mul(TRANSC_STAKER_REWARD)
+                        .div(REWARD_PRECISION_RATE)
+                        .div(mediumTermShares));
+                
+            tokenHolderReward[currentGriseDay] = 
+            tokenHolderReward[currentGriseDay]
+                        .add(stFee.mul(TRANSC_TOKEN_HOLDER_REWARD)
+                        .div(REWARD_PRECISION_RATE));
             
             teamReward = stFee.mul(TEAM_SELL_TRANSC_REWARD)
                               .div(REWARD_PRECISION_RATE);
@@ -228,7 +234,8 @@ contract GriseToken is Utils {
         _balances[recipient] =
         _balances[recipient].add(amount.sub(btFee).sub(stFee));
 
-        teamReward += btFee.mul(TEAM_BUY_TRANS_REWARD).div(REWARD_PRECISION_RATE);
+        teamReward += btFee.mul(TEAM_BUY_TRANS_REWARD)
+                           .div(REWARD_PRECISION_RATE);
         
         _balances[TEAM_ADDRESS] = 
         _balances[TEAM_ADDRESS].add(teamReward);
@@ -239,7 +246,7 @@ contract GriseToken is Utils {
         _totalSupply =
         _totalSupply.sub(stFee.add(btFee).sub(teamReward));
 
-        totalToken[currentGriseWeek()] = _totalSupply.add(stakedToken);
+        totalToken[currentGriseDay] = _totalSupply.add(stakedToken);
         
         emit Transfer(
             sender,
@@ -275,7 +282,7 @@ contract GriseToken is Utils {
         _balances[account] =
         _balances[account].add(amount);
 
-        totalToken[currentGriseWeek()] = _totalSupply.add(stakedToken);
+        totalToken[currentGriseDay()] = _totalSupply.add(stakedToken);
         
         emit Transfer(
             address(0x0),
@@ -285,24 +292,13 @@ contract GriseToken is Utils {
     }
 
     /**
-     * @dev Allows to burn tokens if token sender
-     * wants to reduce totalSupply() of the token
-      */
-    function burn(
-        uint256 amount
-    )
-        external
-    {
-        _burn(msg.sender, amount);
-    }
-
-    /**
      * @dev Destroys `amount` tokens from `account`, reducing the
      * total supply.
      *
      * Emits a {Transfer} event with `to` set to the zero address.
      *
      * Requirements:
+
      *
      * - `account` cannot be the zero address.
      * - `account` must have at least `amount` tokens.
@@ -324,7 +320,7 @@ contract GriseToken is Utils {
         _totalSupply =
         _totalSupply.sub(amount);
 
-        totalToken[currentGriseWeek()] = _totalSupply.add(stakedToken);
+        totalToken[currentGriseDay()] = _totalSupply.add(stakedToken);
         
         emit Transfer(
             account,
@@ -369,39 +365,71 @@ contract GriseToken is Utils {
 
     /**
      * @notice ability to define liquidity transformer contract
-     * @dev this method renounce transformerGateKeeper access
-     * @param _immutableTransformer contract address
+     * @dev this method renounce liquidtyGateKeeper access
+     * @param _immutableGateKeeper contract address
      */
-    function setLiquidityTransfomer(
-        address _immutableTransformer
+    function setLiquidityGateKeeper(
+        address _immutableGateKeeper
     )
         external
     {
         require(
-            transformerGateKeeper == msg.sender,
-            'GRISE: transformer defined'
+            liquidtyGateKeeper == msg.sender,
+            'GRISE: Operation not allowed'
         );
-        LIQUIDITY_TRANSFORMER = _immutableTransformer;
-        transformerGateKeeper = address(0x0);
+
+        LIQUIDITY_GATEKEEPER = _immutableGateKeeper;
+        liquidtyGateKeeper = address(0x0);
     }
 
     /**
      * @notice ability to define Staker contract
      * @dev this method renounce stakeGateKeeper access
-     * @param _immutableStaker contract address
+     * @param _immutableGateKeeper contract address
      */
-    function setStakeTransformer(
-        address _immutableStaker
+    function setStakeGateKeeper(
+        address _immutableGateKeeper
     )
         external
     {
         require(
             stakeGateKeeper == msg.sender,
-            'GRISE: transformer defined'
+            'GRISE: Operation not allowed'
         );
-        STAKE_TRANSFORMER = _immutableStaker;
+
+        STAKE_GATEKEEPER = _immutableGateKeeper;
         stakeGateKeeper = address(0x0);
     }
+
+    /**
+     * @notice ability to define vault contract
+     * @dev this method renounce stakeGateKeeper access
+     * @param _immutableGateKeeper contract address
+     */
+    function setVaultGateKeeper(
+        address _immutableGateKeeper
+    )
+        external
+    {
+        require(
+            vaultGateKeeper == msg.sender,
+            'GRISE: Operation not allowed'
+        );
+
+        VAULT_GATEKEEPER = _immutableGateKeeper;
+        vaultGateKeeper = address(0x0);
+    }
+
+    modifier interfaceValidator() {
+        require (
+            msg.sender == LIQUIDITY_GATEKEEPER ||
+            msg.sender == STAKE_GATEKEEPER ||
+            msg.sender == VAULT_GATEKEEPER,
+            'GRISE: Operation not allowed'
+        );
+        _;
+    }
+
     /**
      * @notice allows liquidityTransformer to mint supply
      * @dev executed from liquidityTransformer upon UNISWAP transfer
@@ -414,13 +442,8 @@ contract GriseToken is Utils {
         uint256 _amount
     )
         external
+        interfaceValidator
     {
-        require(
-            (msg.sender == LIQUIDITY_TRANSFORMER) ||
-            (msg.sender == STAKE_TRANSFORMER) ,
-            'GRISE: wrong transformer'
-        );
-
         _mint(
             _investorAddress,
             _amount
@@ -439,12 +462,8 @@ contract GriseToken is Utils {
         uint256 _amount
     )
         external
+        interfaceValidator
     {
-        require(
-            msg.sender == STAKE_TRANSFORMER ,
-            'GRISE: wrong transformer'
-        );
-
         _burn(
             _investorAddress,
             _amount
@@ -455,8 +474,8 @@ contract GriseToken is Utils {
     function setStaker(address _staker) external {
         
         require(
-            msg.sender == STAKE_TRANSFORMER ,
-            'GRISE: wrong transformer'
+            msg.sender == STAKE_GATEKEEPER,
+            'GRISE: Operation not allowed'
         );
         
         isStaker[_staker] = true;
@@ -465,35 +484,54 @@ contract GriseToken is Utils {
     function resetStaker(address _staker) external {
         
         require(
-            msg.sender == STAKE_TRANSFORMER ,
-            'GRISE: wrong transformer'
+            msg.sender == STAKE_GATEKEEPER,
+            'GRISE: Operation not allowed'
         );
         
         isStaker[_staker] = false;
     }
 
-    function getTransfee(uint256 week) external view returns (uint256) {
-        return (sellTranscFee[week]);
+    function getTransfee(uint256 _day) external view returns (uint256) {
+        return (sellTranscFee[_day]);
     }
     
-    function viewTokenHolderTranscReward(uint256 week) external view returns (uint256){
-        return (tokenHolderReward[week].mul(_balances[msg.sender]).div(totalToken[week]));   
+    function viewTokenHolderTranscReward(uint256 _day) external view returns (uint256 rewardAmount) {
+        
+        if( _day < GRISE_WEEK &&
+            isTranscFeeClaimed[msg.sender][calculateGriseWeek(_day)] &&  
+            calculateGriseWeek(_day) < currentGriseWeek())
+        {
+            rewardAmount = 0;
+        }
+        else
+        {    
+            uint256 calculationDay = _day.mod(GRISE_WEEK) > 0 ? 
+                                    _day.sub(_day.mod(GRISE_WEEK)) :
+                                    _day.sub(GRISE_WEEK);
+
+            for (uint256 day = calculationDay; day < _day; day++)
+            {
+                rewardAmount += tokenHolderReward[day]
+                                            .mul(_balances[msg.sender])
+                                            .div(totalToken[day]);
+            }
+        }
     }
     
-    function claimTokenHolderTranscReward(uint256 week) external returns (bool){
+    function claimTokenHolderTranscReward(uint256 _day) external returns (bool){
         
         require(
-            (currentGriseDay() % 7) == 0,
+            (currentGriseDay().mod(GRISE_WEEK)) == 0,
             'GRISE - Transcation Reward window is not yeat open'
         );
         
         require(
-            week == currentGriseWeek(),
+            calculateGriseWeek(_day) == currentGriseWeek(),
             'GRISE - You are late/early to claim reward'
         );
         
         require( 
-            !isTranscFeeClaimed[msg.sender][week],
+            !isTranscFeeClaimed[msg.sender][currentGriseWeek()],
             'GRISE - Transcation Reward is already been claimed'
         );
         
@@ -502,29 +540,77 @@ contract GriseToken is Utils {
             'GRISE - Token holder doesnot enough balance to claim reward'
         );
 
-        uint256 rewardAmount = tokenHolderReward[week]
+        uint256 rewardAmount;
+        for (uint256 day = _day.sub(GRISE_WEEK); day < _day; day++)
+        {
+            rewardAmount += tokenHolderReward[day]
                                         .mul(_balances[msg.sender])
-                                        .div(totalToken[week]);
+                                        .div(totalToken[day]);
+        }
                                         
         _mint(
             msg.sender,
             rewardAmount
         );
         
-        isTranscFeeClaimed[msg.sender][week] = true;
+        isTranscFeeClaimed[msg.sender][currentGriseWeek()] = true;
 
-        TranscFeeClaimed(msg.sender, week, rewardAmount);
+        TranscFeeClaimed(msg.sender, currentGriseWeek(), rewardAmount);
         return true;
     }
         
     function updateStakedToken(uint256 _stakedToken) external {
         
         require(
-            msg.sender == STAKE_TRANSFORMER ,
-            'GRISE: wrong transformer'
+            msg.sender == STAKE_GATEKEEPER,
+            'GRISE: Operation not allowed'
         );
         
         stakedToken = _stakedToken;
-        totalToken[currentGriseWeek()] = _totalSupply.add(stakedToken);
+        totalToken[currentGriseDay()] = _totalSupply.add(stakedToken);
+    }
+
+    function updateMedTermShares(uint256 _shares) external {
+        
+        require(
+            msg.sender == STAKE_GATEKEEPER,
+            'GRISE: Operation not allowed'
+        );
+        
+        mediumTermShares = _shares;
+    }
+
+    function getEpocTime() external view returns (uint256){
+        return block.timestamp;
+    }
+
+    function getTransFeeReward(uint256 _fromDay, uint256 _toDay) 
+                external view 
+                returns (uint256 rewardAmount){
+
+        require(
+            msg.sender == STAKE_GATEKEEPER,
+            'GRISE: Operation not allowed'
+        );
+
+        for(uint256 day = _fromDay; day < _toDay; day++)
+        {
+            rewardAmount += stakerRewardPerShare[day];
+        }
+    }
+
+    function getReservoirReward(uint256 _fromDay, uint256 _toDay) 
+            external view 
+            returns (uint256 rewardAmount){
+
+        require(
+            msg.sender == STAKE_GATEKEEPER,
+            'GRISE: Operation not allowed'
+        );
+
+        for(uint256 day = _fromDay; day < _toDay; day++)
+        {
+            rewardAmount += reservoirRewardPerShare[day];
+        }
     }
 }

@@ -50,6 +50,10 @@ abstract contract Utils is Timing {
         return _tAmount.mul(BUY_TRANS_FEE).div(REWARD_PRECISION_RATE);
     }
     
+    function calculateGriseWeek(uint256 _day) internal pure returns (uint256) {
+        return((_day.mod(GRISE_WEEK)) > 0)? (_day.div(GRISE_WEEK)) + 1 : (_day.div(GRISE_WEEK));
+    }
+    
     function safeTransfer(
         address token,
         address to,
