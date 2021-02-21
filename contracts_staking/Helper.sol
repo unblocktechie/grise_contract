@@ -34,7 +34,7 @@ abstract contract Helper is Declaration {
         return generateID(_staker, stakeCount[_staker], 0x01);
     }
 
-    function currentGriseDay() internal view returns (uint64) {
+    function currentGriseDay() internal view returns (uint256) {
         return GRISE_CONTRACT.currentGriseDay();
     }
 
@@ -56,6 +56,18 @@ abstract contract Helper is Declaration {
         return _stake.closeDay > 0
             ? _stake.startDay > _stake.closeDay
             : _stake.startDay > currentGriseDay();
+    }
+
+    function _stakeEligibleForWeeklyReward(Stake memory _stake) internal view returns (bool) {
+        return ( _stake.isActive && 
+                !_stakeNotStarted(_stake) &&
+                (_startingDay(_stake) < currentGriseDay().sub(currentGriseDay().mod(GRISE_WEEK))));
+    }
+
+    function _stakeEligibleForMonthlyReward(Stake memory _stake) internal view returns (bool) {
+        return ( _stake.isActive && 
+                !_stakeNotStarted(_stake) &&
+                (_startingDay(_stake) < currentGriseDay().sub(currentGriseDay().mod(GRISE_MONTH))));
     }
 
     function _stakeEnded(Stake memory _stake) internal view returns (bool) {
@@ -96,6 +108,14 @@ abstract contract Helper is Declaration {
         return
             _stake.lockDays > 1 ?
             _stake.lockDays - 1 : 1;
+    }
+
+    function timeToClaimWeeklyReward() public view returns (uint256 _days) {
+        _days = currentGriseDay().mod(GRISE_WEEK);
+    }
+
+    function timeToClaimMonthlyReward() public view returns (uint256 _days) {
+        _days = currentGriseDay().mod(GRISE_MONTH);
     }
 
     function _preparePath(

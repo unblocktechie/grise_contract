@@ -39,7 +39,7 @@ abstract contract Snapshot is Helper {
      * in case manualDailySnapshot reach block limit
      */
     function manualDailySnapshotPoint(
-        uint64 _updateDay
+        uint256 _updateDay
     )
         external
     {
@@ -63,7 +63,7 @@ abstract contract Snapshot is Helper {
      * updates globals.currentGriseDay
      */
     function _dailySnapshotPoint(
-        uint64 _updateDay
+        uint256 _updateDay
     )
         private
     {

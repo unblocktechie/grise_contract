@@ -37,6 +37,8 @@ abstract contract Declaration is Global {
     // address constant WETH = 0xc778417E063141139Fce010982780140Aa0cD5Ab; // ropsten
     address constant WETH = 0xEb59fE75AC86dF3997A990EDe100b90DDCf9a826; // local
 
+    address constant TEAM_ADDRESS = 0x7FF1F8C467114BfBbCC56E406c0Ec21E781bB959;
+
     IUniswapRouterV2 public constant UNISWAP_ROUTER = IUniswapRouterV2(
         // 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D // mainnet
         // 0xf164fC0Ec4E93095b804a4795bBe1e041497b92a // ropsten
@@ -59,10 +61,10 @@ abstract contract Declaration is Global {
         uint256 rewardAmount;
         StakeType stakeType;
         uint64 totalOccupiedSlot;
-        uint64 startDay;
-        uint64 lockDays;
-        uint64 finalDay;
-        uint64 closeDay;
+        uint256 startDay;
+        uint256 lockDays;
+        uint256 finalDay;
+        uint256 closeDay;
         uint256 scrapeDay;
         uint256 daiEquivalent;
         bool isActive;
@@ -91,7 +93,9 @@ abstract contract Declaration is Global {
 
     mapping(uint256 => uint256) public scheduledToEnd;
     mapping(uint256 => uint256) public totalPenalties;
-    mapping(uint256 => uint256) public totalPenaltiesPerShares;
+    mapping(uint256 => uint256) public MLTPenaltiesRewardPerShares; // Medium/Long Term Penatly Reward
+    mapping(uint256 => uint256) public STPenaltiesRewardPerShares;  // Short Term Penatly Reward
+    mapping(uint256 => uint256) public ReservoirPenaltiesRewardPerShares;  // Short Term Penatly Reward)
 
     mapping(StakeType => StakeMinMaxDay) public stakeDayLimit;
     mapping(StakeType => mapping(uint8 => StakeCapping)) public stakeCaps;

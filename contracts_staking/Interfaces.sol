@@ -100,4 +100,8 @@ interface IGriseToken {
         uint256 _toDay
     )external view returns (uint256 rewardAmount);
 
+    function getTokenHolderReward(
+        uint256 _fromDay,
+        uint256 _toDay
+    )external view returns (uint256 rewardAmount);
 }

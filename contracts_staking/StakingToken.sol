@@ -182,7 +182,7 @@ contract StakingToken is Snapshot {
         returns (
             Stake memory _newStake,
             bytes16 _stakeID,
-            uint64 _startDay
+            uint256 _startDay
         )
     {
         GRISE_CONTRACT.burnSupply(
@@ -296,7 +296,7 @@ contract StakingToken is Snapshot {
     {
         require(
             stakes[_staker][_stakeID].isActive,
-            'GRISE: not an active stake'
+            'GRISE: Not an active stake'
         );
 
         _stake = stakes[_staker][_stakeID];
@@ -353,12 +353,11 @@ contract StakingToken is Snapshot {
             ? scrapeDay.sub(scrapeDay.mod(GRISE_WEEK))
             : scrapeDay;
 
-        scrapeAmount = _loopPenaltyRewardAmount(
-            stake.stakesShares,
-            _startingDay(stake),
-            scrapeDay,
-            stake.stakeType
-        );
+        scrapeAmount = getTranscRewardAmount(_stakeID);
+
+        scrapeAmount += getPenaltyRewardAmount(_stakeID);
+
+        scrapeAmount += getReservoirRewardAmount(_stakeID);
 
         remainingDays = _daysLeft(stake);
         scrapes[msg.sender][_stakeID] =
@@ -428,21 +427,25 @@ contract StakingToken is Snapshot {
         address _staker,
         bytes16 _stakeID
     )
-        external
-        view
-        returns (
-            uint256 startDay,
-            uint256 lockDays,
-            uint256 finalDay,
-            uint256 closeDay,
-            uint256 scrapeDay,
-            uint256 stakedAmount,
-            uint256 stakesShares,
-            uint256 rewardAmount,
-            uint256 penaltyAmount,
-            bool isActive,
-            bool isMature
-        )
+    external
+    view
+    returns (
+        uint256 startDay,
+        uint256 lockDays,
+        uint256 finalDay,
+        uint256 closeDay,
+        uint256 scrapeDay,
+        uint256 stakedAmount,
+        uint256 stakesShares,
+        uint256 transcRewardAmount,
+        uint256 penaltyRewardAmount,
+        uint256 reservoirRewardAmount,
+        uint256 penaltyAmount,
+        uint256 timeToClaimWeeklyRewards,
+        uint256 timeToClaimMonthlyRewards,
+        bool isActive,
+        bool isMature
+    )
     {
         Stake memory stake = stakes[_staker][_stakeID];
         startDay = stake.startDay;
@@ -452,10 +455,73 @@ contract StakingToken is Snapshot {
         scrapeDay = stake.scrapeDay;
         stakedAmount = stake.stakedAmount;
         stakesShares = stake.stakesShares;
-        rewardAmount = _checkRewardAmount(stake);
+        transcRewardAmount = getTranscRewardAmount(_stakeID);
+        penaltyRewardAmount = getPenaltyRewardAmount(_stakeID);
+        reservoirRewardAmount = getReservoirRewardAmount(_stakeID);
         penaltyAmount = _calculatePenaltyAmount(stake);
+        timeToClaimWeeklyRewards = timeToClaimWeeklyReward();
+        timeToClaimMonthlyRewards = timeToClaimMonthlyReward();
         isActive = stake.isActive;
         isMature = _isMatureStake(stake);
+    }
+
+
+    function getTranscRewardAmount(bytes16 _stakeID) public view returns (uint256 rewardAmount) {
+        Stake memory _stake = stakes[msg.sender][_stakeID];
+
+        if ( _stakeEligibleForWeeklyReward(_stake))
+        {
+            uint256 _endDay = currentGriseDay().sub(currentGriseDay().mod(GRISE_WEEK));
+
+            rewardAmount = _loopTranscRewardAmount(
+                _stake.stakesShares,
+                _startingDay(_stake),
+                _endDay,
+                _stake.stakeType);
+        }
+    }
+
+    function getPenaltyRewardAmount(bytes16 _stakeID) public view returns (uint256 rewardAmount) {
+        Stake memory _stake = stakes[msg.sender][_stakeID];
+
+        if ( _stakeEligibleForWeeklyReward(_stake))
+        {
+            uint256 _endDay = currentGriseDay().sub(currentGriseDay().mod(GRISE_WEEK));
+
+            rewardAmount = _loopPenaltyRewardAmount(
+                _stake.stakesShares,
+                _startingDay(_stake),
+                _endDay,
+                _stake.stakeType);
+        }
+    }
+
+    function getReservoirRewardAmount(bytes16 _stakeID) public view returns (uint256 rewardAmount) {
+        Stake memory _stake = stakes[msg.sender][_stakeID];
+
+        if ( _stakeEligibleForMonthlyReward(_stake))
+        {
+            uint256 _endDay = currentGriseDay().sub(currentGriseDay().mod(GRISE_MONTH));
+
+            rewardAmount = _loopReservoirRewardAmount(
+                _stake.stakesShares,
+                _startingDay(_stake),
+                _endDay
+            );
+        }
+    }
+
+    function getInflationRewardAmount(bytes16 _stakeID) public view returns (uint256 rewardAmount) {
+        Stake memory _stake = stakes[msg.sender][_stakeID];
+
+        if ( _stake.isActive && !_stakeNotStarted(_stake))
+        {
+            rewardAmount = _loopInflationRewardAmount(
+            _stake.stakesShares,
+            _stake.startDay,
+            currentGriseDay(),
+            _stake.stakeType);
+        }
     }
 
     function _stakesShares(
@@ -470,16 +536,8 @@ contract StakingToken is Snapshot {
                 .div(_sharePrice);
     }
 
-    function _checkRewardAmount(Stake memory _stake) private view returns (uint256) {
-        return _stake.isActive ? _detectReward(_stake) : _stake.rewardAmount;
-    }
-
-    function _detectReward(Stake memory _stake) private view returns (uint256) {
-        return _stakeNotStarted(_stake) ? 0 : _calculateRewardAmount(_stake);
-    }
-
     function _storePenalty(
-        uint64 _storeDay,
+        uint256 _storeDay,
         uint256 _penalty
     )
         private
@@ -488,9 +546,26 @@ contract StakingToken is Snapshot {
             totalPenalties[_storeDay] =
             totalPenalties[_storeDay].add(_penalty);
 
-            totalPenaltiesPerShares[_storeDay] += 
-            _penalty.div(snapshots[_storeDay].totalShares);
+            MLTPenaltiesRewardPerShares[_storeDay] += 
+                _penalty.mul(MED_LONG_STAKER_PENALTY_REWARD)
+                        .div(REWARD_PRECISION_RATE)
+                        .div(globals.mediumTermShares);
 
+            STPenaltiesRewardPerShares[_storeDay] +=
+                _penalty.mul(SHORT_STAKER_PENALTY_REWARD)
+                        .div(REWARD_PRECISION_RATE)
+                        .div(globals.shortTermShares);
+
+            ReservoirPenaltiesRewardPerShares[_storeDay] +=
+                _penalty.mul(RESERVOIR_PENALTY_REWARD)
+                        .div(REWARD_PRECISION_RATE)
+                        .div(globals.mediumTermShares);
+
+            GRISE_CONTRACT.mintSupply(
+                TEAM_ADDRESS,
+                _penalty.mul(TEAM_PENALTY_REWARD)
+                        .div(REWARD_PRECISION_RATE)
+            );
         }
     }
 
@@ -528,6 +603,19 @@ contract StakingToken is Snapshot {
             _stake.stakeType
         );
 
+        _rewardAmount += _loopTranscRewardAmount(
+            _stake.stakesShares,
+            _startingDay(_stake),
+            _calculationDay(_stake),
+            _stake.stakeType
+        );
+
+        _rewardAmount += _loopReservoirRewardAmount(
+            _stake.stakesShares,
+            _startingDay(_stake),
+            _calculationDay(_stake)
+        );
+        
         _rewardAmount += _loopInflationRewardAmount(
             _stake.stakesShares,
             _stake.startDay,
@@ -576,20 +664,64 @@ contract StakingToken is Snapshot {
         view
         returns (uint256 _rewardAmount)
     {
-        uint16 rewardRate = MED_LONG_STAKER_PENALTY_REWARD;
-
-        if (_stakeType == StakeType.SHORT_TERM)
+        for (uint256 day = _startDay; day < _finalDay; day++) 
         {
-            rewardRate = SHORT_STAKER_PENALTY_REWARD;
+            if (_stakeType == StakeType.SHORT_TERM)
+            {
+                _rewardAmount += STPenaltiesRewardPerShares[day]
+                                    .mul(_stakeShares);
+            } else {
+                _rewardAmount += MLTPenaltiesRewardPerShares[day]
+                                    .mul(_stakeShares);
+            }
         }
+    }
+
+    function _loopReservoirRewardAmount(
+        uint256 _stakeShares,
+        uint256 _startDay,
+        uint256 _finalDay
+    )
+        private
+        view
+        returns (uint256 _rewardAmount)
+    {
         
-        for (uint256 _day = _startDay; _day < _finalDay; _day++) 
+        for (uint256 day = _startDay; day < _finalDay; day++) 
         {
-            _rewardAmount += totalPenaltiesPerShares[_day].mul(rewardRate)
-                                                  .div(REWARD_PRECISION_RATE)
-                                                  .mul(_stakeShares);
-
+            _rewardAmount = 
+            _rewardAmount.add(ReservoirPenaltiesRewardPerShares[day]);
         }
+
+        _rewardAmount = 
+        _rewardAmount.add(GRISE_CONTRACT.getReservoirReward(_startDay, _finalDay));
+
+        _rewardAmount = 
+        _rewardAmount.mul(_stakeShares);
+    }
+
+    function _loopTranscRewardAmount(
+        uint256 _stakeShares,
+        uint256 _startDay,
+        uint256 _finalDay,
+        StakeType _stakeType
+    )
+        private
+        view
+        returns (uint256 _rewardAmount)
+    {
+        uint256 stakedAmount = _stakeShares.mul(globals.sharePrice);
+        
+        if (_stakeType != StakeType.SHORT_TERM)
+        {
+            _rewardAmount =
+            _rewardAmount.add(GRISE_CONTRACT.getTransFeeReward(_startDay, _finalDay))
+                          .mul(_stakeShares); 
+        }
+
+        _rewardAmount =
+        _rewardAmount.add(GRISE_CONTRACT.getTokenHolderReward(_startDay, _finalDay))
+                     .mul(stakedAmount);
     }
 
     function _updateDaiEquivalent()
