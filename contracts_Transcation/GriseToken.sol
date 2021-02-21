@@ -613,4 +613,21 @@ contract GriseToken is Utils {
             rewardAmount += reservoirRewardPerShare[day];
         }
     }
+
+    function getTokenHolderReward(uint256 _fromDay, uint256 _toDay) 
+            external view 
+            returns (uint256 rewardAmount){
+
+        require(
+            msg.sender == STAKE_GATEKEEPER,
+            'GRISE: Operation not allowed'
+        );
+
+        for(uint256 day = _fromDay; day < _toDay; day++)
+        {
+            rewardAmount += tokenHolderReward[day]
+                            .div(totalToken[day]);
+        }
+    }
+       
 }
