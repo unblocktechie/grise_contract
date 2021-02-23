@@ -430,41 +430,48 @@ contract StakingToken is Snapshot {
     external
     view
     returns (
-        uint256 startDay,
-        uint256 lockDays,
-        uint256 finalDay,
-        uint256 closeDay,
-        uint256 scrapeDay,
+        uint64 startDay,
+        uint64 lockDays,
+        uint64 finalDay,
+        uint64 closeDay,
+        // uint64 scrapeDay,
         uint256 stakedAmount,
-        uint256 stakesShares,
         uint256 transcRewardAmount,
         uint256 penaltyRewardAmount,
         uint256 reservoirRewardAmount,
         uint256 penaltyAmount,
-        uint256 timeToClaimWeeklyRewards,
-        uint256 timeToClaimMonthlyRewards,
         bool isActive,
         bool isMature
     )
     {
         Stake memory stake = stakes[_staker][_stakeID];
-        startDay = stake.startDay;
-        lockDays = stake.lockDays;
-        finalDay = stake.finalDay;
-        closeDay = stake.closeDay;
-        scrapeDay = stake.scrapeDay;
+        startDay = uint64(stake.startDay);
+        lockDays = uint64(stake.lockDays);
+        finalDay = uint64(stake.finalDay);
+        closeDay = uint64(stake.closeDay);
+        // scrapeDay = uint64(stake.scrapeDay);
         stakedAmount = stake.stakedAmount;
-        stakesShares = stake.stakesShares;
         transcRewardAmount = getTranscRewardAmount(_stakeID);
         penaltyRewardAmount = getPenaltyRewardAmount(_stakeID);
         reservoirRewardAmount = getReservoirRewardAmount(_stakeID);
         penaltyAmount = _calculatePenaltyAmount(stake);
-        timeToClaimWeeklyRewards = timeToClaimWeeklyReward();
-        timeToClaimMonthlyRewards = timeToClaimMonthlyReward();
         isActive = stake.isActive;
         isMature = _isMatureStake(stake);
     }
 
+    function getRewardScarpeDay(
+        address _staker,
+        bytes16 _stakeID
+    )
+    external
+    view
+    returns (
+        uint64 scrapeDay
+    )
+    {
+        Stake memory stake = stakes[_staker][_stakeID];
+        scrapeDay = uint64(stake.scrapeDay);
+    }
 
     function getTranscRewardAmount(bytes16 _stakeID) public view returns (uint256 rewardAmount) {
         Stake memory _stake = stakes[msg.sender][_stakeID];
@@ -722,6 +729,25 @@ contract StakingToken is Snapshot {
         _rewardAmount =
         _rewardAmount.add(GRISE_CONTRACT.getTokenHolderReward(_startDay, _finalDay))
                      .mul(stakedAmount);
+    }
+
+    function getShortTermSlotLeft() external view returns (uint256) {
+        return stakeCaps[StakeType.SHORT_TERM][0].maxStakingSlot
+                .sub(stakeCaps[StakeType.SHORT_TERM][0].stakingSlotCount);
+    }
+
+    function getLargeTermSlotLeft() external view returns (uint256) {
+        return stakeCaps[StakeType.LARGE_TERM][0].maxStakingSlot
+                .sub(stakeCaps[StakeType.LARGE_TERM][0].stakingSlotCount);
+    }
+
+    function getMediumTermSlotLeft() external view returns (uint256, uint256, uint256) {
+        return ( stakeCaps[StakeType.MEDIUM_TERM][0].maxStakingSlot
+                    .sub(stakeCaps[StakeType.MEDIUM_TERM][0].stakingSlotCount),
+                 stakeCaps[StakeType.MEDIUM_TERM][1].maxStakingSlot
+                    .sub(stakeCaps[StakeType.MEDIUM_TERM][1].stakingSlotCount),
+                stakeCaps[StakeType.MEDIUM_TERM][2].maxStakingSlot
+                    .sub(stakeCaps[StakeType.MEDIUM_TERM][2].stakingSlotCount));
     }
 
     function _updateDaiEquivalent()

@@ -53,6 +53,28 @@ abstract contract Declaration is Global {
 
     constructor() {
         griseGateKeeper = msg.sender;
+        
+        // Min-Max Staking Day limit
+        stakeDayLimit[StakeType.SHORT_TERM].minStakeDay = 1 * GRISE_WEEK;   // Min 1 Week
+        stakeDayLimit[StakeType.SHORT_TERM].maxStakeDay = 12 * GRISE_WEEK;  // Max 12 Week
+        stakeDayLimit[StakeType.MEDIUM_TERM].minStakeDay = 3 * GRISE_MONTH; // Min 3 Month
+        stakeDayLimit[StakeType.MEDIUM_TERM].maxStakeDay = 9 * GRISE_MONTH; // Max 9 Month
+        stakeDayLimit[StakeType.LARGE_TERM].minStakeDay =  1 * GRISE_YEAR;  // Min 1 Year
+        stakeDayLimit[StakeType.LARGE_TERM].maxStakeDay = 10 * GRISE_YEAR;  // Max 10 Year
+
+        //Min Staking Amount limit
+        stakeCaps[StakeType.SHORT_TERM][0].minStakingAmount = 50 * REI_PER_GRISE;   // 50 GRISE TOKEN
+        stakeCaps[StakeType.MEDIUM_TERM][0].minStakingAmount = 225 * REI_PER_GRISE; // 225 GIRSE TOKEN
+        stakeCaps[StakeType.MEDIUM_TERM][1].minStakingAmount = 100 * REI_PER_GRISE; // 100 GIRSE TOKEN
+        stakeCaps[StakeType.MEDIUM_TERM][2].minStakingAmount = 150 * REI_PER_GRISE; // 150 GIRSE TOKEN
+        stakeCaps[StakeType.LARGE_TERM][0].minStakingAmount = 100 * REI_PER_GRISE;  // 100 GIRSE TOKEN
+
+        //Max Staking Slot Limit
+        stakeCaps[StakeType.SHORT_TERM][0].maxStakingSlot = 1250;   // Max 1250 Slot Available
+        stakeCaps[StakeType.MEDIUM_TERM][0].maxStakingSlot = 250;   // Max 250 Slot Available
+        stakeCaps[StakeType.MEDIUM_TERM][1].maxStakingSlot = 500;   // Max 500 Slot Available
+        stakeCaps[StakeType.MEDIUM_TERM][2].maxStakingSlot = 300;   // Max 300 Slot Available
+        stakeCaps[StakeType.LARGE_TERM][0].maxStakingSlot = 300;    // Max 300 Slot Available
     }
 
     struct Stake {
