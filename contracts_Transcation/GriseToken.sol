@@ -19,7 +19,6 @@ contract GriseToken is Utils {
     address public stakeGateKeeper;
     address public vaultGateKeeper;
 
-
     /**
      * @dev initial private
      */
