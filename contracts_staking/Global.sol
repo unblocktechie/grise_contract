@@ -13,8 +13,8 @@ abstract contract Global is Events {
     struct Globals {
         uint256 totalStaked;
         uint256 totalShares;
-        uint256 shortTermShares;
-        uint256 mediumTermShares; // Medium Term and Large Term Shares counter
+        uint256 STShares; // Short Term shares counter
+        uint256 MLTShares; // Medium Term and Large Term Shares counter
         uint256 sharePrice;
         uint256 currentGriseDay;
     }
@@ -39,11 +39,11 @@ abstract contract Global is Events {
         globals.totalShares.add(_shares);
 
         if (_stakeType > 0) {
-            globals.mediumTermShares = 
-                globals.mediumTermShares.add(_shares);
+            globals.MLTShares = 
+                globals.MLTShares.add(_shares);
         }else {
-            globals.shortTermShares = 
-                globals.shortTermShares.add(_shares);
+            globals.STShares = 
+                globals.STShares.add(_shares);
         }
 
         _logGlobals();
@@ -65,13 +65,13 @@ abstract contract Global is Events {
         globals.totalShares - _shares : 0;
 
         if (_stakeType > 0) {
-            globals.mediumTermShares = 
-                globals.mediumTermShares > _shares ?
-                globals.mediumTermShares - _shares : 0;
+            globals.MLTShares = 
+                globals.MLTShares > _shares ?
+                globals.MLTShares - _shares : 0;
         }else {            
-            globals.shortTermShares = 
-                globals.shortTermShares > _shares ?
-                globals.shortTermShares - _shares : 0;
+            globals.STShares = 
+                globals.STShares > _shares ?
+                globals.STShares - _shares : 0;
 
         }
         
@@ -84,8 +84,8 @@ abstract contract Global is Events {
         emit NewGlobals(
             globals.totalShares,
             globals.totalStaked,
-            globals.shortTermShares,
-            globals.mediumTermShares,
+            globals.STShares,
+            globals.MLTShares,
             globals.sharePrice,
             globals.currentGriseDay
         );

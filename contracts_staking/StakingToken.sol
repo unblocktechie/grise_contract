@@ -148,7 +148,7 @@ contract StakingToken is Snapshot {
         GRISE_CONTRACT.updateStakedToken(globals.totalStaked);
 
         if (newStake.stakeType != StakeType.SHORT_TERM) {
-            GRISE_CONTRACT.updateMedTermShares(globals.mediumTermShares);
+            GRISE_CONTRACT.updateMedTermShares(globals.MLTShares);
         }
         
         emit StakeStart(
@@ -267,7 +267,7 @@ contract StakingToken is Snapshot {
         GRISE_CONTRACT.updateStakedToken(globals.totalStaked);
 
         if (endedStake.stakeType != StakeType.SHORT_TERM) {
-            GRISE_CONTRACT.updateMedTermShares(globals.mediumTermShares);
+            GRISE_CONTRACT.updateMedTermShares(globals.MLTShares);
         }
         
         emit StakeEnd(
@@ -556,17 +556,17 @@ contract StakingToken is Snapshot {
             MLTPenaltiesRewardPerShares[_storeDay] += 
                 _penalty.mul(MED_LONG_STAKER_PENALTY_REWARD)
                         .div(REWARD_PRECISION_RATE)
-                        .div(globals.mediumTermShares);
+                        .div(globals.MLTShares);
 
             STPenaltiesRewardPerShares[_storeDay] +=
                 _penalty.mul(SHORT_STAKER_PENALTY_REWARD)
                         .div(REWARD_PRECISION_RATE)
-                        .div(globals.shortTermShares);
+                        .div(globals.STShares);
 
             ReservoirPenaltiesRewardPerShares[_storeDay] +=
                 _penalty.mul(RESERVOIR_PENALTY_REWARD)
                         .div(REWARD_PRECISION_RATE)
-                        .div(globals.mediumTermShares);
+                        .div(globals.MLTShares);
 
             GRISE_CONTRACT.mintSupply(
                 TEAM_ADDRESS,
