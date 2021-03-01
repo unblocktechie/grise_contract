@@ -18,9 +18,9 @@ abstract contract Timing is Declaration {
         return uint256((_timestamp - LAUNCH_TIME) / SECONDS_IN_DAY_LP);
     }
 
+
     function currentGriseWeek() public view returns (uint256) {
-        uint256 curGriseDay = currentGriseDay();
-        return((curGriseDay % 7) > 0)? (curGriseDay / 7) + 1 : (curGriseDay / 7);
+        return (currentGriseDay() / GRISE_WEEK);
     }
 
     function currentGriseDay() public view returns (uint256) {

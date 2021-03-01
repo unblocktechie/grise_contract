@@ -51,7 +51,7 @@ abstract contract Utils is Timing {
     }
     
     function calculateGriseWeek(uint256 _day) internal pure returns (uint256) {
-        return((_day.mod(GRISE_WEEK)) > 0)? (_day.div(GRISE_WEEK)) + 1 : (_day.div(GRISE_WEEK));
+        return (_day / GRISE_WEEK);
     }
     
     function safeTransfer(
