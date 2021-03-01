@@ -311,7 +311,7 @@ contract GriseToken is Utils {
             account != address(0x0)
         );
 
-        amount = amount.mul(TEMP_PRECISION);
+        //amount = amount.mul(TEMP_PRECISION); // VIJAY
         
         _balances[account] =
         _balances[account].sub(amount);
