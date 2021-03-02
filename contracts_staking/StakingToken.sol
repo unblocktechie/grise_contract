@@ -210,7 +210,7 @@ contract StakingToken is Snapshot {
 
         _newStake.daiEquivalent = latestDaiEquivalent
             .mul(_newStake.stakedAmount)
-            .div(REI_PER_GRISE);
+            .div(GRE_PER_GRISE);
     }
 
     /**
@@ -728,7 +728,8 @@ contract StakingToken is Snapshot {
 
         _rewardAmount =
         _rewardAmount.add(GRISE_CONTRACT.getTokenHolderReward(_startDay, _finalDay))
-                     .mul(stakedAmount);
+                     .mul(stakedAmount)
+                     .div(PRECISION_RATE);
     }
 
     function getShortTermSlotLeft() external view returns (uint256) {
@@ -755,7 +756,7 @@ contract StakingToken is Snapshot {
     returns (uint256)
     {
         try UNISWAP_ROUTER.getAmountsOut(
-            REI_PER_GRISE, _path
+            GRE_PER_GRISE, _path
         ) returns (uint256[] memory results) {
             latestDaiEquivalent = results[2];
             return latestDaiEquivalent;

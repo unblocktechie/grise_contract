@@ -118,6 +118,35 @@ abstract contract Helper is Declaration {
         _days = currentGriseDay().mod(GRISE_MONTH);
     }
 
+    function stakesPagination(
+        address _staker,
+        uint256 _offset,
+        uint256 _length
+    )
+        external
+        view
+        returns (bytes16[] memory _stakes)
+    {
+        uint256 start = _offset > 0 &&
+            stakeCount[_staker] > _offset ?
+            stakeCount[_staker] - _offset : stakeCount[_staker];
+
+        uint256 finish = _length > 0 &&
+            start > _length ?
+            start - _length : 0;
+
+        uint256 i;
+
+        _stakes = new bytes16[](start - finish);
+
+        for (uint256 _stakeIndex = start; _stakeIndex > finish; _stakeIndex--) {
+            bytes16 _stakeID = generateID(_staker, _stakeIndex - 1, 0x01);
+            if (stakes[_staker][_stakeID].stakedAmount > 0) {
+                _stakes[i] = _stakeID; i++;
+            }
+        }
+    }
+
     function _preparePath(
         address _tokenAddress,
         address _GriseAddress

@@ -3,7 +3,7 @@
 pragma solidity =0.7.6;
 
 import "./SafeMath.sol";
-import "./interfaces.sol";
+import "./Interfaces.sol";
 import "./Events.sol";
 
 abstract contract Global is Events {
