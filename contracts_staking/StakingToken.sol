@@ -734,38 +734,72 @@ contract StakingToken is Snapshot {
                      .div(PRECISION_RATE);
     }
 
-    function getShortTermSlotLeft() external view returns (uint256) {
-        return stakeCaps[StakeType.SHORT_TERM][0].maxStakingSlot
-                .sub(stakeCaps[StakeType.SHORT_TERM][0].stakingSlotCount);
+    function getSlotLeft() 
+        external 
+        view 
+        returns 
+        (uint256 STSlotLeft, 
+         uint256 MT3MonthSlotLeft,
+         uint256 MT6MonthSlotLeft, 
+         uint256 MT9MonthSlotLeft, 
+         uint256 LTSlotLeft) {
+
+        STSlotLeft = stakeCaps[StakeType.SHORT_TERM][0].maxStakingSlot
+                            .sub(stakeCaps[StakeType.SHORT_TERM][0].stakingSlotCount);
+
+        MT3MonthSlotLeft = stakeCaps[StakeType.MEDIUM_TERM][0].maxStakingSlot
+                            .sub(stakeCaps[StakeType.MEDIUM_TERM][0].stakingSlotCount);
+                            
+        MT6MonthSlotLeft = stakeCaps[StakeType.MEDIUM_TERM][1].maxStakingSlot
+                            .sub(stakeCaps[StakeType.MEDIUM_TERM][1].stakingSlotCount);
+
+        MT9MonthSlotLeft = stakeCaps[StakeType.MEDIUM_TERM][2].maxStakingSlot
+                            .sub(stakeCaps[StakeType.MEDIUM_TERM][2].stakingSlotCount);
+        
+        LTSlotLeft = stakeCaps[StakeType.LONG_TERM][0].maxStakingSlot
+                            .sub(stakeCaps[StakeType.LONG_TERM][0].stakingSlotCount);
     }
 
-    function getLargeTermSlotLeft() external view returns (uint256) {
-        return stakeCaps[StakeType.LONG_TERM][0].maxStakingSlot
-                .sub(stakeCaps[StakeType.LONG_TERM][0].stakingSlotCount);
+    // function getLargeTermSlotLeft() external view returns (uint256) {
+    //     return stakeCaps[StakeType.LONG_TERM][0].maxStakingSlot
+    //             .sub(stakeCaps[StakeType.LONG_TERM][0].stakingSlotCount);
+    // }
+
+    // function getMediumTermSlotLeft() external view returns (uint256, uint256, uint256) {
+    //     return ( stakeCaps[StakeType.MEDIUM_TERM][0].maxStakingSlot
+    //                 .sub(stakeCaps[StakeType.MEDIUM_TERM][0].stakingSlotCount),
+    //              stakeCaps[StakeType.MEDIUM_TERM][1].maxStakingSlot
+    //                 .sub(stakeCaps[StakeType.MEDIUM_TERM][1].stakingSlotCount),
+    //             stakeCaps[StakeType.MEDIUM_TERM][2].maxStakingSlot
+    //                 .sub(stakeCaps[StakeType.MEDIUM_TERM][2].stakingSlotCount));
+    // }
+
+    function getStakeCount() 
+        public 
+        view 
+        returns 
+        (uint256 STStakeCount, 
+         uint256 MT3MonthStakeCount,
+         uint256 MT6MonthStakeCount,
+         uint256 MT9MonthStakeCount,
+         uint256 LTStakeCount) {
+
+        STStakeCount = stakeCaps[StakeType.SHORT_TERM][0].totalStakeCount;
+        MT3MonthStakeCount = stakeCaps[StakeType.MEDIUM_TERM][0].totalStakeCount;
+        MT6MonthStakeCount = stakeCaps[StakeType.MEDIUM_TERM][1].totalStakeCount;
+        MT9MonthStakeCount = stakeCaps[StakeType.MEDIUM_TERM][2].totalStakeCount;
+        LTStakeCount = stakeCaps[StakeType.LONG_TERM][0].totalStakeCount;
     }
 
-    function getMediumTermSlotLeft() external view returns (uint256, uint256, uint256) {
-        return ( stakeCaps[StakeType.MEDIUM_TERM][0].maxStakingSlot
-                    .sub(stakeCaps[StakeType.MEDIUM_TERM][0].stakingSlotCount),
-                 stakeCaps[StakeType.MEDIUM_TERM][1].maxStakingSlot
-                    .sub(stakeCaps[StakeType.MEDIUM_TERM][1].stakingSlotCount),
-                stakeCaps[StakeType.MEDIUM_TERM][2].maxStakingSlot
-                    .sub(stakeCaps[StakeType.MEDIUM_TERM][2].stakingSlotCount));
-    }
+    // function getLongTermStakeCount() public view returns (uint256) {
+    //     return stakeCaps[StakeType.LONG_TERM][0].totalStakeCount;
+    // }
 
-    function getShortTermStakeCount() public view returns (uint256) {
-        return stakeCaps[StakeType.SHORT_TERM][0].totalStakeCount;
-    }
-
-    function getLongTermStakeCount() public view returns (uint256) {
-        return stakeCaps[StakeType.LONG_TERM][0].totalStakeCount;
-    }
-
-    function getMediumTermStakeCount() public view returns (uint256, uint256, uint256) {
-        return ( stakeCaps[StakeType.MEDIUM_TERM][0].totalStakeCount,
-                 stakeCaps[StakeType.MEDIUM_TERM][1].totalStakeCount,
-                 stakeCaps[StakeType.MEDIUM_TERM][2].totalStakeCount);
-    }
+    // function getMediumTermStakeCount() public view returns (uint256, uint256, uint256) {
+    //     return ( stakeCaps[StakeType.MEDIUM_TERM][0].totalStakeCount,
+    //              stakeCaps[StakeType.MEDIUM_TERM][1].totalStakeCount,
+    //              stakeCaps[StakeType.MEDIUM_TERM][2].totalStakeCount);
+    // }
 
     function getTotalStakedToken() public view returns (uint256) {
         return globals.totalStaked;
