@@ -59,22 +59,22 @@ abstract contract Declaration is Global {
         stakeDayLimit[StakeType.SHORT_TERM].maxStakeDay = 12 * GRISE_WEEK;  // Max 12 Week
         stakeDayLimit[StakeType.MEDIUM_TERM].minStakeDay = 3 * GRISE_MONTH; // Min 3 Month
         stakeDayLimit[StakeType.MEDIUM_TERM].maxStakeDay = 9 * GRISE_MONTH; // Max 9 Month
-        stakeDayLimit[StakeType.LARGE_TERM].minStakeDay =  1 * GRISE_YEAR;  // Min 1 Year
-        stakeDayLimit[StakeType.LARGE_TERM].maxStakeDay = 10 * GRISE_YEAR;  // Max 10 Year
+        stakeDayLimit[StakeType.LONG_TERM].minStakeDay =  1 * GRISE_YEAR;  // Min 1 Year
+        stakeDayLimit[StakeType.LONG_TERM].maxStakeDay = 10 * GRISE_YEAR;  // Max 10 Year
 
         //Min Staking Amount limit
         stakeCaps[StakeType.SHORT_TERM][0].minStakingAmount = 50 * GRE_PER_GRISE;   // 50 GRISE TOKEN
         stakeCaps[StakeType.MEDIUM_TERM][0].minStakingAmount = 225 * GRE_PER_GRISE; // 225 GIRSE TOKEN
         stakeCaps[StakeType.MEDIUM_TERM][1].minStakingAmount = 100 * GRE_PER_GRISE; // 100 GIRSE TOKEN
         stakeCaps[StakeType.MEDIUM_TERM][2].minStakingAmount = 150 * GRE_PER_GRISE; // 150 GIRSE TOKEN
-        stakeCaps[StakeType.LARGE_TERM][0].minStakingAmount = 100 * GRE_PER_GRISE;  // 100 GIRSE TOKEN
+        stakeCaps[StakeType.LONG_TERM][0].minStakingAmount = 100 * GRE_PER_GRISE;  // 100 GIRSE TOKEN
 
         //Max Staking Slot Limit
         stakeCaps[StakeType.SHORT_TERM][0].maxStakingSlot = 1250;   // Max 1250 Slot Available
         stakeCaps[StakeType.MEDIUM_TERM][0].maxStakingSlot = 250;   // Max 250 Slot Available
         stakeCaps[StakeType.MEDIUM_TERM][1].maxStakingSlot = 500;   // Max 500 Slot Available
         stakeCaps[StakeType.MEDIUM_TERM][2].maxStakingSlot = 300;   // Max 300 Slot Available
-        stakeCaps[StakeType.LARGE_TERM][0].maxStakingSlot = 300;    // Max 300 Slot Available
+        stakeCaps[StakeType.LONG_TERM][0].maxStakingSlot = 300;    // Max 300 Slot Available
     }
 
     struct Stake {
@@ -82,7 +82,7 @@ abstract contract Declaration is Global {
         uint256 stakedAmount;
         uint256 rewardAmount;
         StakeType stakeType;
-        uint64 totalOccupiedSlot;
+        uint256 totalOccupiedSlot;
         uint256 startDay;
         uint256 lockDays;
         uint256 finalDay;
@@ -95,13 +95,14 @@ abstract contract Declaration is Global {
     enum StakeType {
         SHORT_TERM,
         MEDIUM_TERM,
-        LARGE_TERM
+        LONG_TERM
     }
 
     struct StakeCapping {
         uint256 minStakingAmount;
         uint256 stakingSlotCount;
         uint256 maxStakingSlot;
+        uint256 totalStakeCount;
     }
 
     struct StakeMinMaxDay{

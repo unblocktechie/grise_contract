@@ -103,12 +103,12 @@ contract StakingToken is Snapshot {
             'GRISE: All staking slot is occupied not extra slot is available'
         );
 
-        uint64 newOccupiedSlotCount = _stakedAmount
+        uint256 newOccupiedSlotCount = _stakedAmount
                                       .mod(stakeCaps[_stakeType][stakingSlot].minStakingAmount) != 0?
-                                      uint64(_stakedAmount
-                                      .div(stakeCaps[_stakeType][stakingSlot].minStakingAmount) + 1) :
-                                      uint64(_stakedAmount
-                                      .div(stakeCaps[_stakeType][stakingSlot].minStakingAmount));
+                                      _stakedAmount
+                                      .div(stakeCaps[_stakeType][stakingSlot].minStakingAmount) + 1 :
+                                      _stakedAmount
+                                      .div(stakeCaps[_stakeType][stakingSlot].minStakingAmount);
 
         require(
             (stakeCaps[_stakeType][stakingSlot].stakingSlotCount + newOccupiedSlotCount <= 
@@ -150,7 +150,9 @@ contract StakingToken is Snapshot {
         if (newStake.stakeType != StakeType.SHORT_TERM) {
             GRISE_CONTRACT.updateMedTermShares(globals.MLTShares);
         }
-        
+
+        stakeCaps[_stakeType][stakingSlot].totalStakeCount++;
+
         emit StakeStart(
             stakeID,
             msg.sender,
@@ -176,7 +178,7 @@ contract StakingToken is Snapshot {
         uint256 _stakedAmount,
         uint64 _lockDays,
         StakeType  _stakeType,
-        uint64 _totalOccupiedSlot
+        uint256 _totalOccupiedSlot
     )
         private
         returns (
@@ -270,6 +272,8 @@ contract StakingToken is Snapshot {
             GRISE_CONTRACT.updateMedTermShares(globals.MLTShares);
         }
         
+        stakeCaps[endedStake.stakeType][stakingSlot].totalStakeCount--;
+
         emit StakeEnd(
             _stakeID,
             msg.sender,
@@ -353,11 +357,11 @@ contract StakingToken is Snapshot {
             ? scrapeDay.sub(scrapeDay.mod(GRISE_WEEK))
             : scrapeDay;
 
-        scrapeAmount = getTranscRewardAmount(_stakeID);
+        scrapeAmount = getTranscRewardAmount(msg.sender, _stakeID);
 
-        scrapeAmount += getPenaltyRewardAmount(_stakeID);
+        scrapeAmount += getPenaltyRewardAmount(msg.sender, _stakeID);
 
-        scrapeAmount += getReservoirRewardAmount(_stakeID);
+        scrapeAmount += getReservoirRewardAmount(msg.sender, _stakeID);
 
         remainingDays = _daysLeft(stake);
         scrapes[msg.sender][_stakeID] =
@@ -430,11 +434,10 @@ contract StakingToken is Snapshot {
     external
     view
     returns (
-        uint64 startDay,
-        uint64 lockDays,
-        uint64 finalDay,
-        uint64 closeDay,
-        // uint64 scrapeDay,
+        uint256 startDay,
+        uint256 lockDays,
+        uint256 finalDay,
+        uint256 closeDay,
         uint256 stakedAmount,
         uint256 transcRewardAmount,
         uint256 penaltyRewardAmount,
@@ -445,15 +448,14 @@ contract StakingToken is Snapshot {
     )
     {
         Stake memory stake = stakes[_staker][_stakeID];
-        startDay = uint64(stake.startDay);
-        lockDays = uint64(stake.lockDays);
-        finalDay = uint64(stake.finalDay);
-        closeDay = uint64(stake.closeDay);
-        // scrapeDay = uint64(stake.scrapeDay);
+        startDay = stake.startDay;
+        lockDays = stake.lockDays;
+        finalDay = stake.finalDay;
+        closeDay = stake.closeDay;
         stakedAmount = stake.stakedAmount;
-        transcRewardAmount = getTranscRewardAmount(_stakeID);
-        penaltyRewardAmount = getPenaltyRewardAmount(_stakeID);
-        reservoirRewardAmount = getReservoirRewardAmount(_stakeID);
+        transcRewardAmount = getTranscRewardAmount(_staker, _stakeID);
+        penaltyRewardAmount = getPenaltyRewardAmount(_staker, _stakeID);
+        reservoirRewardAmount = getReservoirRewardAmount(_staker, _stakeID);
         penaltyAmount = _calculatePenaltyAmount(stake);
         isActive = stake.isActive;
         isMature = _isMatureStake(stake);
@@ -466,15 +468,15 @@ contract StakingToken is Snapshot {
     external
     view
     returns (
-        uint64 scrapeDay
+        uint256 scrapeDay
     )
     {
         Stake memory stake = stakes[_staker][_stakeID];
-        scrapeDay = uint64(stake.scrapeDay);
+        scrapeDay = stake.scrapeDay;
     }
 
-    function getTranscRewardAmount(bytes16 _stakeID) public view returns (uint256 rewardAmount) {
-        Stake memory _stake = stakes[msg.sender][_stakeID];
+    function getTranscRewardAmount(address _staker, bytes16 _stakeID) public view returns (uint256 rewardAmount) {
+        Stake memory _stake = stakes[_staker][_stakeID];
 
         if ( _stakeEligibleForWeeklyReward(_stake))
         {
@@ -488,8 +490,8 @@ contract StakingToken is Snapshot {
         }
     }
 
-    function getPenaltyRewardAmount(bytes16 _stakeID) public view returns (uint256 rewardAmount) {
-        Stake memory _stake = stakes[msg.sender][_stakeID];
+    function getPenaltyRewardAmount(address _staker, bytes16 _stakeID) public view returns (uint256 rewardAmount) {
+        Stake memory _stake = stakes[_staker][_stakeID];
 
         if ( _stakeEligibleForWeeklyReward(_stake))
         {
@@ -503,8 +505,8 @@ contract StakingToken is Snapshot {
         }
     }
 
-    function getReservoirRewardAmount(bytes16 _stakeID) public view returns (uint256 rewardAmount) {
-        Stake memory _stake = stakes[msg.sender][_stakeID];
+    function getReservoirRewardAmount(address _staker, bytes16 _stakeID) public view returns (uint256 rewardAmount) {
+        Stake memory _stake = stakes[_staker][_stakeID];
 
         if ( _stakeEligibleForMonthlyReward(_stake))
         {
@@ -518,8 +520,8 @@ contract StakingToken is Snapshot {
         }
     }
 
-    function getInflationRewardAmount(bytes16 _stakeID) public view returns (uint256 rewardAmount) {
-        Stake memory _stake = stakes[msg.sender][_stakeID];
+    function getInflationRewardAmount(address _staker, bytes16 _stakeID) public view returns (uint256 rewardAmount) {
+        Stake memory _stake = stakes[_staker][_stakeID];
 
         if ( _stake.isActive && !_stakeNotStarted(_stake))
         {
@@ -738,8 +740,8 @@ contract StakingToken is Snapshot {
     }
 
     function getLargeTermSlotLeft() external view returns (uint256) {
-        return stakeCaps[StakeType.LARGE_TERM][0].maxStakingSlot
-                .sub(stakeCaps[StakeType.LARGE_TERM][0].stakingSlotCount);
+        return stakeCaps[StakeType.LONG_TERM][0].maxStakingSlot
+                .sub(stakeCaps[StakeType.LONG_TERM][0].stakingSlotCount);
     }
 
     function getMediumTermSlotLeft() external view returns (uint256, uint256, uint256) {
@@ -749,6 +751,24 @@ contract StakingToken is Snapshot {
                     .sub(stakeCaps[StakeType.MEDIUM_TERM][1].stakingSlotCount),
                 stakeCaps[StakeType.MEDIUM_TERM][2].maxStakingSlot
                     .sub(stakeCaps[StakeType.MEDIUM_TERM][2].stakingSlotCount));
+    }
+
+    function getShortTermStakeCount() public view returns (uint256) {
+        return stakeCaps[StakeType.SHORT_TERM][0].totalStakeCount;
+    }
+
+    function getLongTermStakeCount() public view returns (uint256) {
+        return stakeCaps[StakeType.LONG_TERM][0].totalStakeCount;
+    }
+
+    function getMediumTermStakeCount() public view returns (uint256, uint256, uint256) {
+        return ( stakeCaps[StakeType.MEDIUM_TERM][0].totalStakeCount,
+                 stakeCaps[StakeType.MEDIUM_TERM][1].totalStakeCount,
+                 stakeCaps[StakeType.MEDIUM_TERM][2].totalStakeCount);
+    }
+
+    function getTotalStakedToken() public view returns (uint256) {
+        return globals.totalStaked;
     }
 
     function _updateDaiEquivalent()
