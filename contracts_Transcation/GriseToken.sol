@@ -635,6 +635,8 @@ contract GriseToken is Utils {
     }
 
     function timeToClaimWeeklyReward() public view returns (uint256 _days) {
-        _days = GRISE_WEEK - currentGriseDay().mod(GRISE_WEEK);
+        _days = currentGriseDay().mod(GRISE_WEEK) > 0 ?
+                    GRISE_WEEK - currentGriseDay().mod(GRISE_WEEK) :
+                    0;
     }
 }
