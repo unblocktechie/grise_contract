@@ -311,7 +311,7 @@ contract GriseToken is Utils {
             account != address(0x0)
         );
 
-        //amount = amount.mul(TEMP_PRECISION); // VIJAY
+        amount = amount.mul(TEMP_PRECISION);
         
         _balances[account] =
         _balances[account].sub(amount);
@@ -520,7 +520,7 @@ contract GriseToken is Utils {
         }
     }
     
-    function claimTokenHolderTranscReward() external returns (bool){
+    function claimTokenHolderTranscReward() external returns (uint256 rewardAmount){
         
         uint256 _day = currentGriseDay();
         require( 
@@ -543,7 +543,6 @@ contract GriseToken is Utils {
             'GRISE - Transcation Reward is already been claimed'
         );
 
-        uint256 rewardAmount;
         for (uint256 day = _day.sub(GRISE_WEEK); day < _day; day++)
         {
             rewardAmount += tokenHolderReward[day]
@@ -559,7 +558,6 @@ contract GriseToken is Utils {
         isTranscFeeClaimed[_msgSender()][currentGriseWeek()] = true;
 
         TranscFeeClaimed(_msgSender(), currentGriseWeek(), rewardAmount);
-        return true;
     }
         
     function updateStakedToken(uint256 _stakedToken) external {
@@ -634,5 +632,9 @@ contract GriseToken is Utils {
                             .mul(PRECISION_RATE)
                             .div(totalToken[day]);
         }
+    }
+
+    function timeToClaimWeeklyReward() public view returns (uint256 _days) {
+        _days = GRISE_WEEK - currentGriseDay().mod(GRISE_WEEK);
     }
 }
