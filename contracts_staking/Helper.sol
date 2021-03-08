@@ -111,11 +111,15 @@ abstract contract Helper is Declaration {
     }
 
     function timeToClaimWeeklyReward() public view returns (uint256 _days) {
-        _days = GRISE_WEEK - currentGriseDay().mod(GRISE_WEEK);
+        _days = currentGriseDay().mod(GRISE_WEEK) ?
+                    GRISE_WEEK - currentGriseDay().mod(GRISE_WEEK) :
+                    0;
     }
 
     function timeToClaimMonthlyReward() public view returns (uint256 _days) {
-        _days = GRISE_MONTH - currentGriseDay().mod(GRISE_MONTH);
+        _days = currentGriseDay().mod(GRISE_MONTH) ?
+                    GRISE_MONTH - currentGriseDay().mod(GRISE_MONTH) :
+                    0;
     }
 
     function stakesPagination(
