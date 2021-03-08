@@ -160,8 +160,7 @@ contract StakingToken is Snapshot {
             newStake.stakedAmount,
             newStake.stakesShares,
             newStake.startDay,
-            newStake.lockDays,
-            newStake.daiEquivalent
+            newStake.lockDays
         );
 
         return (stakeID, _startDay);
@@ -207,12 +206,6 @@ contract StakingToken is Snapshot {
             _stakedAmount,
             globals.sharePrice
         );
-
-        _updateDaiEquivalent();
-
-        _newStake.daiEquivalent = latestDaiEquivalent
-            .mul(_newStake.stakedAmount)
-            .div(GRE_PER_GRISE);
     }
 
     /**
@@ -431,17 +424,17 @@ contract StakingToken is Snapshot {
         address _staker,
         bytes16 _stakeID
     )
-    external
-    view
-    returns (
+        external
+        view
+        returns 
+    (
         uint256 startDay,
         uint256 lockDays,
         uint256 finalDay,
         uint256 closeDay,
+        uint256 scrapeDay,
+        StakeType stakeType,
         uint256 stakedAmount,
-        uint256 transcRewardAmount,
-        uint256 penaltyRewardAmount,
-        uint256 reservoirRewardAmount,
         uint256 penaltyAmount,
         bool isActive,
         bool isMature
@@ -452,30 +445,61 @@ contract StakingToken is Snapshot {
         lockDays = stake.lockDays;
         finalDay = stake.finalDay;
         closeDay = stake.closeDay;
+        scrapeDay = stake.scrapeDay;
+        stakeType = stake.stakeType;
         stakedAmount = stake.stakedAmount;
-        transcRewardAmount = getTranscRewardAmount(_staker, _stakeID);
-        penaltyRewardAmount = getPenaltyRewardAmount(_staker, _stakeID);
-        reservoirRewardAmount = getReservoirRewardAmount(_staker, _stakeID);
         penaltyAmount = _calculatePenaltyAmount(stake);
         isActive = stake.isActive;
         isMature = _isMatureStake(stake);
     }
 
-    function getRewardScarpeDay(
+    function checkStakeRewards(
         address _staker,
         bytes16 _stakeID
     )
-    external
-    view
-    returns (
-        uint256 scrapeDay
+        external
+        view
+        returns 
+    (
+        uint256 transcRewardAmount,
+        uint256 penaltyRewardAmount,
+        uint256 reservoirRewardAmount
     )
     {
-        Stake memory stake = stakes[_staker][_stakeID];
-        scrapeDay = stake.scrapeDay;
+        transcRewardAmount = getTranscRewardAmount(_staker, _stakeID);
+        penaltyRewardAmount = getPenaltyRewardAmount(_staker, _stakeID);
+        reservoirRewardAmount = getReservoirRewardAmount(_staker, _stakeID);
     }
 
-    function getTranscRewardAmount(address _staker, bytes16 _stakeID) public view returns (uint256 rewardAmount) {
+    function updateStakingSlotLimit(
+        uint256 STSlotLimit,
+        uint256 MT3MonthSlotLimit,
+        uint256 MT6MonthSlotLimit,
+        uint256 MT9MonthSlotLimit,
+        uint256 LTSlotLimit
+    )
+    external
+    {
+        require(
+            msg.sender == contractDeployer,
+            'Invalid Operation'
+        );
+
+        stakeCaps[StakeType.SHORT_TERM][0].maxStakingSlot = STSlotLimit;
+        stakeCaps[StakeType.MEDIUM_TERM][0].maxStakingSlot = MT3MonthSlotLimit;
+        stakeCaps[StakeType.MEDIUM_TERM][1].maxStakingSlot = MT6MonthSlotLimit;
+        stakeCaps[StakeType.MEDIUM_TERM][2].maxStakingSlot = MT9MonthSlotLimit;
+        stakeCaps[StakeType.LONG_TERM][0].maxStakingSlot = LTSlotLimit;
+    }
+
+    function getTranscRewardAmount(
+        address _staker,
+        bytes16 _stakeID
+    ) 
+        public
+        view
+        returns (uint256 rewardAmount)
+    {
         Stake memory _stake = stakes[_staker][_stakeID];
 
         if ( _stakeEligibleForWeeklyReward(_stake))
@@ -490,7 +514,14 @@ contract StakingToken is Snapshot {
         }
     }
 
-    function getPenaltyRewardAmount(address _staker, bytes16 _stakeID) public view returns (uint256 rewardAmount) {
+    function getPenaltyRewardAmount(
+        address _staker,
+        bytes16 _stakeID
+    ) 
+        public 
+        view 
+        returns (uint256 rewardAmount) 
+    {
         Stake memory _stake = stakes[_staker][_stakeID];
 
         if ( _stakeEligibleForWeeklyReward(_stake))
@@ -505,7 +536,14 @@ contract StakingToken is Snapshot {
         }
     }
 
-    function getReservoirRewardAmount(address _staker, bytes16 _stakeID) public view returns (uint256 rewardAmount) {
+    function getReservoirRewardAmount(
+        address _staker,
+        bytes16 _stakeID
+    ) 
+        public 
+        view 
+        returns (uint256 rewardAmount) 
+    {
         Stake memory _stake = stakes[_staker][_stakeID];
 
         if ( _stakeEligibleForMonthlyReward(_stake))
@@ -520,7 +558,14 @@ contract StakingToken is Snapshot {
         }
     }
 
-    function getInflationRewardAmount(address _staker, bytes16 _stakeID) public view returns (uint256 rewardAmount) {
+    function getInflationRewardAmount(
+        address _staker,
+        bytes16 _stakeID
+    ) 
+        public 
+        view 
+        returns (uint256 rewardAmount) 
+    {    
         Stake memory _stake = stakes[_staker][_stakeID];
 
         if ( _stake.isActive && !_stakeNotStarted(_stake))
@@ -588,10 +633,11 @@ contract StakingToken is Snapshot {
         return _stakeNotStarted(_stake) || _isMatureStake(_stake) ? 0 : _getPenalties(_stake);
     }
 
-    function _getPenalties(Stake memory _stake)
+    function _getPenalties(
+        Stake memory _stake
+    )
         private
         view
- 
         returns (uint256)
     {
         return _stake.stakedAmount * ((PENALTY_RATE * (_daysLeft(_stake) - 1) / (_getLockDays(_stake)))) / 10000;
@@ -604,7 +650,6 @@ contract StakingToken is Snapshot {
         view
         returns (uint256 _rewardAmount)
     {
-
         _rewardAmount = _loopPenaltyRewardAmount(
             _stake.stakesShares,
             _startingDay(_stake),
@@ -738,11 +783,14 @@ contract StakingToken is Snapshot {
         external 
         view 
         returns 
-        (uint256 STSlotLeft, 
-         uint256 MT3MonthSlotLeft,
-         uint256 MT6MonthSlotLeft, 
-         uint256 MT9MonthSlotLeft, 
-         uint256 LTSlotLeft) {
+    (
+        uint256 STSlotLeft, 
+        uint256 MT3MonthSlotLeft,
+        uint256 MT6MonthSlotLeft, 
+        uint256 MT9MonthSlotLeft, 
+        uint256 LTSlotLeft
+    ) 
+    {
 
         STSlotLeft = stakeCaps[StakeType.SHORT_TERM][0].maxStakingSlot
                             .sub(stakeCaps[StakeType.SHORT_TERM][0].stakingSlotCount);
@@ -760,30 +808,18 @@ contract StakingToken is Snapshot {
                             .sub(stakeCaps[StakeType.LONG_TERM][0].stakingSlotCount);
     }
 
-    // function getLargeTermSlotLeft() external view returns (uint256) {
-    //     return stakeCaps[StakeType.LONG_TERM][0].maxStakingSlot
-    //             .sub(stakeCaps[StakeType.LONG_TERM][0].stakingSlotCount);
-    // }
-
-    // function getMediumTermSlotLeft() external view returns (uint256, uint256, uint256) {
-    //     return ( stakeCaps[StakeType.MEDIUM_TERM][0].maxStakingSlot
-    //                 .sub(stakeCaps[StakeType.MEDIUM_TERM][0].stakingSlotCount),
-    //              stakeCaps[StakeType.MEDIUM_TERM][1].maxStakingSlot
-    //                 .sub(stakeCaps[StakeType.MEDIUM_TERM][1].stakingSlotCount),
-    //             stakeCaps[StakeType.MEDIUM_TERM][2].maxStakingSlot
-    //                 .sub(stakeCaps[StakeType.MEDIUM_TERM][2].stakingSlotCount));
-    // }
-
     function getStakeCount() 
         public 
         view 
         returns 
-        (uint256 STStakeCount, 
-         uint256 MT3MonthStakeCount,
-         uint256 MT6MonthStakeCount,
-         uint256 MT9MonthStakeCount,
-         uint256 LTStakeCount) {
-
+    (
+        uint256 STStakeCount, 
+        uint256 MT3MonthStakeCount,
+        uint256 MT6MonthStakeCount,
+        uint256 MT9MonthStakeCount,
+        uint256 LTStakeCount
+    )
+    {
         STStakeCount = stakeCaps[StakeType.SHORT_TERM][0].totalStakeCount;
         MT3MonthStakeCount = stakeCaps[StakeType.MEDIUM_TERM][0].totalStakeCount;
         MT6MonthStakeCount = stakeCaps[StakeType.MEDIUM_TERM][1].totalStakeCount;
@@ -791,33 +827,11 @@ contract StakingToken is Snapshot {
         LTStakeCount = stakeCaps[StakeType.LONG_TERM][0].totalStakeCount;
     }
 
-    // function getLongTermStakeCount() public view returns (uint256) {
-    //     return stakeCaps[StakeType.LONG_TERM][0].totalStakeCount;
-    // }
-
-    // function getMediumTermStakeCount() public view returns (uint256, uint256, uint256) {
-    //     return ( stakeCaps[StakeType.MEDIUM_TERM][0].totalStakeCount,
-    //              stakeCaps[StakeType.MEDIUM_TERM][1].totalStakeCount,
-    //              stakeCaps[StakeType.MEDIUM_TERM][2].totalStakeCount);
-    // }
-
-    function getTotalStakedToken() public view returns (uint256) {
-        return globals.totalStaked;
-    }
-
-    function _updateDaiEquivalent()
-    internal
-    returns (uint256)
+    function getTotalStakedToken()
+        public
+        view 
+        returns (uint256) 
     {
-        try UNISWAP_ROUTER.getAmountsOut(
-            GRE_PER_GRISE, _path
-        ) returns (uint256[] memory results) {
-            latestDaiEquivalent = results[2];
-            return latestDaiEquivalent;
-        } catch Error(string memory) {
-            return latestDaiEquivalent;
-        } catch (bytes memory) {
-            return latestDaiEquivalent;
-        }
+        return globals.totalStaked;
     }
 }

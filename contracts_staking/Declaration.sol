@@ -29,10 +29,6 @@ abstract contract Declaration is Global {
     uint16 constant TEAM_PENALTY_REWARD = 1500;
     uint16 constant BURN_PENALTY_REWARD = 1200;
 
-
-    // address constant DAI = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
-    address constant DAI = 0xaD6D458402F60fD3Bd25163575031ACDce07538D; // ropsten
-
     // address constant WETH = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2; // mainnet
     // address constant WETH = 0xc778417E063141139Fce010982780140Aa0cD5Ab; // ropsten
     address constant WETH = 0xEb59fE75AC86dF3997A990EDe100b90DDCf9a826; // local
@@ -47,13 +43,12 @@ abstract contract Declaration is Global {
 
     IGriseToken public GRISE_CONTRACT;
     address public griseGateKeeper;
-
-    uint256 public latestDaiEquivalent;
-    address[] internal _path = [address(GRISE_CONTRACT), WETH, DAI];
+    address public contractDeployer;
 
     constructor() {
         griseGateKeeper = msg.sender;
-        
+        contractDeployer = msg.sender;
+
         // Min-Max Staking Day limit
         stakeDayLimit[StakeType.SHORT_TERM].minStakeDay = 1 * GRISE_WEEK;   // Min 1 Week
         stakeDayLimit[StakeType.SHORT_TERM].maxStakeDay = 12 * GRISE_WEEK;  // Max 12 Week
@@ -88,7 +83,6 @@ abstract contract Declaration is Global {
         uint256 finalDay;
         uint256 closeDay;
         uint256 scrapeDay;
-        uint256 daiEquivalent;
         bool isActive;
     }
 

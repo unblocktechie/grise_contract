@@ -11,8 +11,7 @@ contract Events {
         uint256 stakedAmount,
         uint256 stakesShares,
         uint256 startDay,
-        uint256 lockDays,
-        uint256 daiEquivalent
+        uint256 lockDays
     );
 
     event StakeEnd(
@@ -35,11 +34,11 @@ contract Events {
     );
 
     event NewGlobals(
+        uint256 indexed currentGriseDay,
         uint256 totalShares,
         uint256 totalStaked,
         uint256 shortTermshare,
         uint256 MediumTermshare,
-        uint256 shareRate,
-        uint256 indexed currentGriseDay
+        uint256 shareRate
     );
 }

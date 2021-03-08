@@ -82,12 +82,12 @@ abstract contract Global is Events {
         private
     {
         emit NewGlobals(
+            globals.currentGriseDay,
             globals.totalShares,
             globals.totalStaked,
             globals.STShares,
             globals.MLTShares,
-            globals.sharePrice,
-            globals.currentGriseDay
+            globals.sharePrice
         );
     }
 }
