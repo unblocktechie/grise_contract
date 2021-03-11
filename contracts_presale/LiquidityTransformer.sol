@@ -37,10 +37,10 @@ contract LiquidityTransformer {
     uint8 constant INVESTMENT_DAYS = 50;
     uint8 constant MAX_DAY_SLOT = 147;
 
-    uint128 constant THRESHOLD_LIMIT_MIN = 0.1 ether;
+    uint128 constant THRESHOLD_LIMIT_MIN = 100000000000000000 wei;
     uint128 constant THRESHOLD_LIMIT_MAX = 20 ether;
     uint256 public TEAM_ETHER;
-    uint128 constant MIN_INVEST = 0.1 ether;   
+    uint128 constant MIN_INVEST = 100000000000000000 wei;   
     uint128 constant DAILY_MAX_SUPPLY = 12000;
     
     uint256 constant YODAS_PER_GRISE = 10 ** uint256(18);
