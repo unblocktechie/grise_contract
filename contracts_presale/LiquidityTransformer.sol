@@ -3,14 +3,14 @@
 pragma solidity =0.7.6;
 
 import './Interfaces.sol';
-//import './Randomness.sol';
+import './Randomness.sol';
 
 contract LiquidityTransformer {
 
     using SafeMathLT for uint256;
     using SafeMathLT for uint128;
 
-  //  Randomness public randomness;
+    Randomness public randomness;
     IGriseToken public GRISE_CONTRACT;
    
     UniswapRouterV2 public constant UNISWAP_ROUTER = UniswapRouterV2(
@@ -35,15 +35,14 @@ contract LiquidityTransformer {
     //address constant WETH = 0xEb59fE75AC86dF3997A990EDe100b90DDCf9a826; // local
 
     uint8 constant INVESTMENT_DAYS = 50;
-    uint8 constant MAX_DAY_SLOT = 4;
+    uint8 constant MAX_DAY_SLOT = 147;
 
-    uint128 constant THRESHOLD_LIMIT_MIN = 2 ether;
+    uint128 constant THRESHOLD_LIMIT_MIN = 0.1 ether;
     uint128 constant THRESHOLD_LIMIT_MAX = 20 ether;
     uint256 public TEAM_ETHER;
-    uint128 constant MIN_INVEST = 1000 wei;   //1 ether
+    uint128 constant MIN_INVEST = 0.1 ether;   
     uint128 constant DAILY_MAX_SUPPLY = 12000;
-    //uint256 constant MAX_STATIC_SUPPLY_DAY = 28;
-
+    
     uint256 constant YODAS_PER_GRISE = 10 ** uint256(18);
     uint256 constant NUM_RANDOM_BYTES_REQUESTED = 7;
 
@@ -65,7 +64,7 @@ contract LiquidityTransformer {
     
     uint256 constant START_DAY = 1;
     uint256 public totalInvestment;
-    uint128 constant GAS_REFUND_THRESHOLD = 4 ether;
+    uint128 constant GAS_REFUND_THRESHOLD = 200 ether;
 
     mapping(uint256 => uint256) public investorAccountCount;
     mapping(uint256 => mapping(uint256 => address)) public investorAccounts;
@@ -186,6 +185,8 @@ contract LiquidityTransformer {
         );
         _;
     }
+    
+    event Received(address,uint); //DHAVAL
 
     receive() external payable {
         require (
@@ -196,6 +197,8 @@ contract LiquidityTransformer {
             msg.sender == TOKEN_DEFINER,
             'GRISE: direct deposits disabled'
         );
+        
+        emit Received(msg.sender,msg.value); //DHAVAL
     }
 
     function defineToken(
@@ -214,10 +217,9 @@ contract LiquidityTransformer {
         TOKEN_DEFINER = address(0x0);
     }
 
-    constructor(address _griseToken) {
-       // randomness=_randomness;
+    constructor(address _griseToken, Randomness _randomness) {
+        randomness=_randomness;
         GRISE_CONTRACT = IGriseToken(_griseToken);
-       
         dailySlots[START_DAY]++;
 
         dailyMinSupply[1] = 6000;
@@ -423,7 +425,7 @@ contract LiquidityTransformer {
         );
 
         uint256 _investmentBalance = _referralAddress == address(0x0)
-            ? _senderValue // no referral bonus
+            ? _senderValue 
             : referralAmount[_referralAddress].add(_senderValue) > THRESHOLD_LIMIT_MAX
             ?_senderValue.mul(1100).div(1000)
             :_senderValue.mul(10500).div(10000);
@@ -553,11 +555,6 @@ contract LiquidityTransformer {
             dailyTotalSupply[_investmentDay] == 0,
             'GRISE: supply already generated'
         );
-
-       
-        // (_investmentDay <= MAX_STATIC_SUPPLY_DAY)
-        //         ? _generateStaticSupply(_investmentDay)
-        //         : _generateRandomSupply(_investmentDay);  
                 
         DAILY_MAX_SUPPLY - dailyMinSupply[_investmentDay] == dailyMinSupply[_investmentDay]
             ? _generateStaticSupply(_investmentDay)
@@ -596,12 +593,9 @@ contract LiquidityTransformer {
     )
         internal
     {
-        //uint256 ceilingDayMaxSupply = dailyMaxSupply[_investmentDay].sub(dailyMinSupply[_investmentDay]);
-
-        //randomness.stateRandomNumber();
-        //uint256 randomSupply =  randomness.randomNumber() % ceilingDayMaxSupply;
-        uint256 randomSupply =  25000;
-
+        uint256 ceilingDayMaxSupply = dailyMaxSupply[_investmentDay].sub(dailyMinSupply[_investmentDay]);
+        uint256 randomSupply =  randomness.stateRandomNumber() % ceilingDayMaxSupply;
+    
         g.generatedDays = g.generatedDays + 1;
         dailyTotalSupply[_investmentDay] = dailyMinSupply[_investmentDay]
             .add(randomSupply)
@@ -744,9 +738,9 @@ contract LiquidityTransformer {
         g.totalReferralTokens = 0;
         g.totalWeiContributed = 0;
 
-        // emit UniSwapResult(
-        //     amountToken, amountETH, liquidity
-        // );
+        emit UniSwapResult(
+            amountToken, amountETH, liquidity
+        );
     }
 
 
@@ -1074,9 +1068,9 @@ contract LiquidityTransformer {
         external
         afterUniswapTransfer
     {
-        TEAM_ADDRESS.transfer(TEAM_ETHER.div(3));
+        TEAM_ADDRESS.transfer(TEAM_ETHER.mul(5).div(9));
         DEV_ADDRESS.transfer(TEAM_ETHER.div(9));
-        BOUNTY_ADDRESS.transfer(TEAM_ETHER.mul(5).div(9));
+        BOUNTY_ADDRESS.transfer(TEAM_ETHER.div(3));
     }
 
     function notContract(address _addr) internal view returns (bool) {
