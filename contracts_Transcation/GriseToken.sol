@@ -14,10 +14,12 @@ contract GriseToken is Utils {
     address public LIQUIDITY_GATEKEEPER;
     address public STAKE_GATEKEEPER;
     address public VAULT_GATEKEEPER;
+    address public TOKENMATRIX_GATEKEEPER;
 
     address private liquidtyGateKeeper;
     address private stakeGateKeeper;
     address private vaultGateKeeper;
+    address private tokenMatrixGateKeeper;
 
     /**
      * @dev initial private
@@ -49,6 +51,7 @@ contract GriseToken is Utils {
         liquidtyGateKeeper = _msgSender();
         stakeGateKeeper = _msgSender();
         vaultGateKeeper = _msgSender();
+        tokenMatrixGateKeeper = _msgSender();
     }
 
     /**
@@ -311,7 +314,7 @@ contract GriseToken is Utils {
             account != address(0x0)
         );
 
-        amount = amount.mul(TEMP_PRECISION);
+        //amount = amount.mul(TEMP_PRECISION); //VIJAY
         
         _balances[account] =
         _balances[account].sub(amount);
@@ -367,7 +370,7 @@ contract GriseToken is Utils {
      * @dev this method renounce liquidtyGateKeeper access
      * @param _immutableGateKeeper contract address
      */
-    function setLiquidityGateKeeper(
+    function setLiquidtyGateKeeper(
         address _immutableGateKeeper
     )
         external
@@ -402,7 +405,7 @@ contract GriseToken is Utils {
 
     /**
      * @notice ability to define vault contract
-     * @dev this method renounce stakeGateKeeper access
+     * @dev this method renounce vaultGateKeeper access
      * @param _immutableGateKeeper contract address
      */
     function setVaultGateKeeper(
@@ -419,11 +422,31 @@ contract GriseToken is Utils {
         vaultGateKeeper = address(0x0);
     }
 
+    /**
+     * @notice ability to define tokenMatrix contract
+     * @dev this method renounce tokenMatrixGateKeeper access
+     * @param _immutableGateKeeper contract address
+     */
+    function setTokenMatrixGateKeeper(
+        address _immutableGateKeeper
+    )
+        external
+    {
+        require(
+            tokenMatrixGateKeeper == _msgSender(),
+            'GRISE: Operation not allowed'
+        );
+
+        TOKENMATRIX_GATEKEEPER = _immutableGateKeeper;
+        tokenMatrixGateKeeper = address(0x0);
+    }
+
     modifier interfaceValidator() {
         require (
             _msgSender() == LIQUIDITY_GATEKEEPER ||
             _msgSender() == STAKE_GATEKEEPER ||
-            _msgSender() == VAULT_GATEKEEPER,
+            _msgSender() == VAULT_GATEKEEPER || 
+            _msgSender() == TOKENMATRIX_GATEKEEPER,
             'GRISE: Operation not allowed'
         );
         _;
