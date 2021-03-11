@@ -87,14 +87,16 @@ contract StakingToken is Snapshot {
         }
 
         require(
+            _lockDays % GRISE_WEEK == 0 &&
             _lockDays >= stakeDayLimit[_stakeType].minStakeDay &&
             _lockDays <= stakeDayLimit[_stakeType].maxStakeDay,
             'GRISE: stake is not in range'
         );
 
         require(
-            _stakedAmount >= stakeCaps[_stakeType][stakingSlot].minStakingAmount,
-            'GRISE: stake is not large enough'
+            _stakedAmount >= stakeCaps[_stakeType][stakingSlot].minStakingAmount && 
+            _stakedAmount.mod(stakeCaps[_stakeType][stakingSlot].minStakingAmount) == 0,
+            'GRISE: stake is not large enough or StakingAmount is not Valid'
         );
 
         require(
@@ -163,7 +165,7 @@ contract StakingToken is Snapshot {
             newStake.lockDays
         );
 
-        return (stakeID, _startDay);
+        return (stakeID, _startDay);F
     }
 
     /**
@@ -186,6 +188,11 @@ contract StakingToken is Snapshot {
             uint256 _startDay
         )
     {
+        require(
+            GRISE_CONTRACT.balanceOfStaker(_staker) >= _stakedAmount,
+            "GRISE: Staker doesn't have enough balance"
+        );
+
         GRISE_CONTRACT.burnSupply(
             _staker,
             _stakedAmount
@@ -573,7 +580,7 @@ contract StakingToken is Snapshot {
             rewardAmount = _loopInflationRewardAmount(
             _stake.stakesShares,
             _stake.startDay,
-            currentGriseDay(),
+            _calculationDay(_stake),
             _stake.stakeType);
         }
     }
@@ -673,7 +680,7 @@ contract StakingToken is Snapshot {
         _rewardAmount += _loopInflationRewardAmount(
             _stake.stakesShares,
             _stake.startDay,
-            _stake.finalDay,
+            _calculationDay(_stake),
             _stake.stakeType
         );
     }

@@ -55,6 +55,10 @@ interface IGriseToken {
         external view
         returns (uint64);
 
+    function balanceOfStaker(
+        address account
+    ) external view returns (uint256);
+
     function approve(
         address _spender,
         uint256 _value
