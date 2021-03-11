@@ -311,7 +311,7 @@ contract GriseToken is Utils {
             account != address(0x0)
         );
 
-        // amount = amount.mul(TEMP_PRECISION); // VIJAY
+        amount = amount.mul(TEMP_PRECISION);
         
         _balances[account] =
         _balances[account].sub(amount);
@@ -638,5 +638,9 @@ contract GriseToken is Utils {
         _days = currentGriseDay().mod(GRISE_WEEK) > 0 ?
                     GRISE_WEEK - currentGriseDay().mod(GRISE_WEEK) :
                     0;
+    }
+
+    function balanceOfStaker(address account) external view returns (uint256) {
+        return _balances[account];
     }
 }
