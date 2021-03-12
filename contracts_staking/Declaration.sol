@@ -30,15 +30,15 @@ abstract contract Declaration is Global {
     uint16 constant BURN_PENALTY_REWARD = 1200;
 
     // address constant WETH = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2; // mainnet
-    // address constant WETH = 0xc778417E063141139Fce010982780140Aa0cD5Ab; // ropsten
-    address constant WETH = 0xEb59fE75AC86dF3997A990EDe100b90DDCf9a826; // local
+     address constant WETH = 0xc778417E063141139Fce010982780140Aa0cD5Ab; // ropsten
+    //address constant WETH = 0xEb59fE75AC86dF3997A990EDe100b90DDCf9a826; // local
 
     address constant TEAM_ADDRESS = 0x7FF1F8C467114BfBbCC56E406c0Ec21E781bB959;
 
     IUniswapRouterV2 public constant UNISWAP_ROUTER = IUniswapRouterV2(
         // 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D // mainnet
-        // 0xf164fC0Ec4E93095b804a4795bBe1e041497b92a // ropsten
-        0x57079e0d0657890218C630DA5248A1103a1b4ad0 // local
+         0xf164fC0Ec4E93095b804a4795bBe1e041497b92a // ropsten
+        //0x57079e0d0657890218C630DA5248A1103a1b4ad0 // local
     );
 
     IGriseToken public GRISE_CONTRACT;

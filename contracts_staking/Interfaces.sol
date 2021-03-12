@@ -11,18 +11,8 @@ interface IUniswapRouterV2 {
         uint[] memory amounts
     );
 
-    // function swapExactTokensForTokens(
-    //     uint amountIn,
-    //     uint amountOutMin,
-    //     address[] calldata path,
-    //     address to,
-    //     uint deadline
-    // ) external returns (
-    //     uint[] memory amounts
-    // );
-
-    function swapExactETHForTokens(
-        uint amountOutMin,
+    function swapETHForExactTokens(
+        uint amountOut,
         address[] calldata path,
         address to,
         uint deadline
@@ -30,24 +20,6 @@ interface IUniswapRouterV2 {
         uint[] memory amounts
     );
 }
-
-// interface ERC20TokenI {
-
-//     function transferFrom(
-//         address _from,
-//         address _to,
-//         uint256 _value
-//     )  external returns (
-//         bool success
-//     );
-
-//     function approve(
-//         address _spender,
-//         uint256 _value
-//     )  external returns (
-//         bool success
-//     );
-// }
 
 interface IGriseToken {
 

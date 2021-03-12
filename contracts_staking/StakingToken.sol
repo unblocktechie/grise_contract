@@ -33,6 +33,7 @@ contract StakingToken is Snapshot {
      * @param _lockDays amount of days it is locked for.
      */
     function createStakeWithETH(
+        uint256 _stakedAmount,
         StakeType _stakeType,
         uint64 _lockDays
     )
@@ -44,13 +45,20 @@ contract StakingToken is Snapshot {
             path[0] = WETH;
             path[1] = address(GRISE_CONTRACT);
 
-        uint256[] memory amounts =
-        UNISWAP_ROUTER.swapExactETHForTokens{value: msg.value}(
-            1,
+        uint256[] memory amounts = 
+        UNISWAP_ROUTER.swapETHForExactTokens{value: msg.value}(
+            _stakedAmount,
             path,
             msg.sender,
             block.timestamp + 2 hours
         );
+
+        // UNISWAP_ROUTER.swapExactETHForTokens{value: msg.value}(
+        //     1,
+        //     path,
+        //     msg.sender,
+        //     block.timestamp + 2 hours
+        // );
 
         return createStake(
             amounts[1],
@@ -441,6 +449,7 @@ contract StakingToken is Snapshot {
         uint256 closeDay,
         uint256 scrapeDay,
         StakeType stakeType,
+        uint256 slotOccupied,
         uint256 stakedAmount,
         uint256 penaltyAmount,
         bool isActive,
@@ -454,6 +463,7 @@ contract StakingToken is Snapshot {
         closeDay = stake.closeDay;
         scrapeDay = stake.scrapeDay;
         stakeType = stake.stakeType;
+        slotOccupied = stake.totalOccupiedSlot;
         stakedAmount = stake.stakedAmount;
         penaltyAmount = _calculatePenaltyAmount(stake);
         isActive = stake.isActive;
@@ -470,12 +480,14 @@ contract StakingToken is Snapshot {
     (
         uint256 transcRewardAmount,
         uint256 penaltyRewardAmount,
-        uint256 reservoirRewardAmount
+        uint256 reservoirRewardAmount,
+        uint256 inflationRewardAmount
     )
     {
         transcRewardAmount = getTranscRewardAmount(_staker, _stakeID);
         penaltyRewardAmount = getPenaltyRewardAmount(_staker, _stakeID);
         reservoirRewardAmount = getReservoirRewardAmount(_staker, _stakeID);
+        inflationRewardAmount = getInflationRewardAmount(_staker, _stakeID);
     }
 
     function updateStakingSlotLimit(
@@ -503,7 +515,7 @@ contract StakingToken is Snapshot {
         address _staker,
         bytes16 _stakeID
     ) 
-        public
+        private
         view
         returns (uint256 rewardAmount)
     {
@@ -525,7 +537,7 @@ contract StakingToken is Snapshot {
         address _staker,
         bytes16 _stakeID
     ) 
-        public 
+        private 
         view 
         returns (uint256 rewardAmount) 
     {
@@ -547,7 +559,7 @@ contract StakingToken is Snapshot {
         address _staker,
         bytes16 _stakeID
     ) 
-        public 
+        private 
         view 
         returns (uint256 rewardAmount) 
     {
@@ -569,7 +581,7 @@ contract StakingToken is Snapshot {
         address _staker,
         bytes16 _stakeID
     ) 
-        public 
+        private 
         view 
         returns (uint256 rewardAmount) 
     {    
@@ -787,7 +799,7 @@ contract StakingToken is Snapshot {
     }
 
     function getSlotLeft() 
-        external 
+        public 
         view 
         returns 
     (
