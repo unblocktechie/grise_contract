@@ -6,12 +6,12 @@ library SafeMath {
 
     function add(uint256 a, uint256 b) internal pure returns (uint256) {
         uint256 c = a + b;
-        require(c >= a);
+        require(c >= a, 'GRISE: SafeMath Add failed');
         return c;
     }
 
     function sub(uint256 a, uint256 b) internal pure returns (uint256) {
-        require(b <= a);
+        require(b <= a, 'GRISE: SafeMath Sub failed');
         uint256 c = a - b;
         return c;
     }
@@ -23,7 +23,7 @@ library SafeMath {
         }
 
         uint256 c = a * b;
-        require(c / a == b);
+        require(c / a == b, 'GRISE: SafeMath Mul failed');
         return c;
     }
 
@@ -38,7 +38,7 @@ library SafeMath {
     }
 
     function mod(uint256 a, uint256 b) internal pure returns (uint256) {
-        require(b != 0);
+        require(b != 0, 'GRISE: SafeMath Mod failed');
         return a % b;
     }
 }

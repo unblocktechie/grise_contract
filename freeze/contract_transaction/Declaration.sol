@@ -53,7 +53,7 @@ abstract contract Declaration is Context, Events {
     // uint256 constant TEMP_PRECISION = 1E18; // VIJAY
     
     constructor() {
-        LAUNCH_TIME = 1614563995;//1604966400; // (10th November 2020 @00:00 GMT == day 0)
+        LAUNCH_TIME = block.timestamp;//1604966400; // (10th November 2020 @00:00 GMT == day 0)
     }
 
 
