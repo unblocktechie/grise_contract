@@ -165,7 +165,7 @@ contract StakingToken is Snapshot {
             newStake.lockDays
         );
 
-        return (stakeID, _startDay);F
+        return (stakeID, _startDay);
     }
 
     /**
