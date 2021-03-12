@@ -666,4 +666,9 @@ contract GriseToken is Utils {
     function balanceOfStaker(address account) external view returns (uint256) {
         return _balances[account];
     }
+
+    function getLaunchTime() external view returns (uint256) {
+        return LAUNCH_TIME;
+    }
+
 }
