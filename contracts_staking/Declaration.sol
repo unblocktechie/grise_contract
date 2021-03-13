@@ -21,6 +21,9 @@ abstract contract Declaration is Global {
     uint16 constant MED_TERM_INFLATION_REWARD = 3000; // 30% of Inflation Amount with 1E4 Precision
     uint16 constant LONG_TERM_INFLATION_REWARD = 7000; // 70% of Inflation Amount with 1E4 Precision
 
+    uint16 constant ST_STAKER_COMPENSATION = 200; // 2.00% multiple 1E4 Precision
+    uint16 constant MLT_STAKER_COMPENSATION = 347; // 3.47% multiple 1E4 Precision
+
     // End-Stake Panalty Reward
     uint16 constant PENALTY_RATE = 1700; // pre-mature end-stake penalty
     uint16 constant RESERVOIR_PENALTY_REWARD = 3427;

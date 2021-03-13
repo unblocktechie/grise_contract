@@ -311,11 +311,28 @@ contract StakingToken is Snapshot {
             'GRISE: Not an active stake'
         );
 
+        uint256 transFeeCompensation;
         _stake = stakes[_staker][_stakeID];
         _stake.closeDay = currentGriseDay();
         _stake.rewardAmount = _calculateRewardAmount(_stake);
         _penalty = _calculatePenaltyAmount(_stake);
 
+        if (_stake.stakeType == StakeType.SHORT_TERM)
+        {
+            transFeeCompensation = (_stake.stakedAmount
+                                    .add(_stake.rewardAmount)
+                                    .sub(_penalty))
+                                    .mul(ST_STAKER_COMPENSATION)
+                                    .div(REWARD_PRECISION_RATE);
+        }
+        else
+        {
+            transFeeCompensation = (_stake.stakedAmount
+                                    .add(_stake.rewardAmount)
+                                    .sub(_penalty))
+                                    .mul(MLT_STAKER_COMPENSATION)
+                                    .div(REWARD_PRECISION_RATE);
+        }
         _stake.isActive = false;
 
         GRISE_CONTRACT.mintSupply(
@@ -327,6 +344,11 @@ contract StakingToken is Snapshot {
         GRISE_CONTRACT.mintSupply(
             _staker,
             _stake.rewardAmount
+        );
+
+        GRISE_CONTRACT.mintSupply(
+            _staker,
+            transFeeCompensation
         );
     }
 
@@ -723,7 +745,10 @@ contract StakingToken is Snapshot {
                                 .mul(LONG_TERM_INFLATION_REWARD)
                                 .div(REWARD_PRECISION_RATE);
 
-            _rewardAmount += _stakeShares * PRECISION_RATE / inflationAmount;
+            _rewardAmount = _rewardAmount
+                            .add(_stakeShares
+                                    .mul(PRECISION_RATE)
+                                    .div(inflationAmount));
         }
     }
 
@@ -788,14 +813,14 @@ contract StakingToken is Snapshot {
         if (_stakeType != StakeType.SHORT_TERM)
         {
             _rewardAmount =
-            _rewardAmount.add(GRISE_CONTRACT.getTransFeeReward(_startDay, _finalDay))
-                          .mul(_stakeShares); 
+            _rewardAmount.add(GRISE_CONTRACT.getTransFeeReward(_startDay, _finalDay)
+                                .mul(_stakeShares)); 
         }
 
         _rewardAmount =
-        _rewardAmount.add(GRISE_CONTRACT.getTokenHolderReward(_startDay, _finalDay))
-                     .mul(stakedAmount)
-                     .div(PRECISION_RATE);
+        _rewardAmount.add(GRISE_CONTRACT.getTokenHolderReward(_startDay, _finalDay)
+                            .mul(stakedAmount)
+                            .div(PRECISION_RATE));
     }
 
     function getSlotLeft() 
