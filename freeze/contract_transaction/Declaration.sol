@@ -65,5 +65,5 @@ abstract contract Declaration is Context, Events {
     mapping(uint256 => uint256) internal tokenHolderReward;
     mapping(address => mapping(uint256 => bool)) internal isTranscFeeClaimed;
     mapping(uint256 => uint256) internal totalToken;
-    mapping(address => bool) internal isStaker;
+    mapping(address => uint16) internal isStaker;
 }
