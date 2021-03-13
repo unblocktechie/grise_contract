@@ -200,7 +200,7 @@ contract GriseToken is Utils {
         uint256 teamReward;
         uint256 currentGriseDay = _currentGriseDay();
 
-        if (!isStaker[sender]) {
+        if (isStaker[sender] > 0) {
             stFee = _calculateSellTranscFee(amount);
 
             sellTranscFee[currentGriseDay] = 
@@ -502,7 +502,7 @@ contract GriseToken is Utils {
             'GRISE: Operation not allowed'
         );
         
-        isStaker[_staker] = true;
+        isStaker[_staker] = isStaker[_staker] + 1;
     }
     
     function resetStaker(address _staker) external {
@@ -512,7 +512,10 @@ contract GriseToken is Utils {
             'GRISE: Operation not allowed'
         );
         
-        isStaker[_staker] = false;
+        if (isStaker[_staker] > 0)
+        {
+            isStaker[_staker] = isStaker[_staker] - 1;
+        }
     }
     
     function viewTokenHolderTranscReward() external view returns (uint256 rewardAmount) {
