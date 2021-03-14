@@ -53,13 +53,6 @@ contract StakingToken is Snapshot {
             block.timestamp + 2 hours
         );
 
-        // UNISWAP_ROUTER.swapExactETHForTokens{value: msg.value}(
-        //     1,
-        //     path,
-        //     msg.sender,
-        //     block.timestamp + 2 hours
-        // );
-
         return createStake(
             amounts[1],
             _stakeType,
@@ -181,6 +174,8 @@ contract StakingToken is Snapshot {
     * @param _staker ...
     * @param _stakedAmount ...
     * @param _lockDays ...
+    * @param _stakeType ...
+    * @param _totalOccupiedSlot ...
     */
     function _createStake(
         address _staker,
@@ -296,6 +291,11 @@ contract StakingToken is Snapshot {
         return endedStake.rewardAmount;
     }
 
+    /**
+    * @notice A method for a staker to end a stake
+    * @param _staker ...
+    * @param _stakeID ...
+    */
     function _endStake(
         address _staker,
         bytes16 _stakeID
