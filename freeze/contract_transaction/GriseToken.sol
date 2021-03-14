@@ -95,9 +95,7 @@ contract GriseToken is Utils {
     )
         public
         returns (bool)
-    {
-        // amount = amount.mul(TEMP_PRECISION); // VIJAY
-        
+    {  
         _transfer(
             _msgSender(),
             recipient,
@@ -152,9 +150,7 @@ contract GriseToken is Utils {
     )
         public
         returns (bool)
-    {
-        // amount = amount.mul(TEMP_PRECISION); // VIJAY
-        
+    {    
         _approve(sender,
             _msgSender(), _allowances[sender][_msgSender()].sub(
                 amount
@@ -200,7 +196,7 @@ contract GriseToken is Utils {
         uint256 teamReward;
         uint256 currentGriseDay = _currentGriseDay();
 
-        if (isStaker[sender] > 0) {
+        if (staker[sender] > 0) {
             stFee = _calculateSellTranscFee(amount);
 
             sellTranscFee[currentGriseDay] = 
@@ -313,9 +309,7 @@ contract GriseToken is Utils {
         require(
             account != address(0x0)
         );
-
-        //amount = amount.mul(TEMP_PRECISION); //VIJAY
-        
+    
         _balances[account] =
         _balances[account].sub(amount);
 
@@ -465,9 +459,7 @@ contract GriseToken is Utils {
     )
         external
         interfaceValidator
-    {
-        // _amount = _amount.mul(TEMP_PRECISION); // VIJAY
-        
+    {       
         _mint(
             _investorAddress,
             _amount
@@ -493,40 +485,17 @@ contract GriseToken is Utils {
             _amount
         );
     }
-
     
-    function setStaker(address _staker) external {
-        
-        require(
-            _msgSender() == STAKE_GATEKEEPER,
-            'GRISE: Operation not allowed'
-        );
-        
-        isStaker[_staker] = isStaker[_staker] + 1;
-    }
-    
-    function resetStaker(address _staker) external {
-        
-        require(
-            _msgSender() == STAKE_GATEKEEPER,
-            'GRISE: Operation not allowed'
-        );
-        
-        if (isStaker[_staker] > 0)
-        {
-            isStaker[_staker] = isStaker[_staker] - 1;
-        }
-    }
-    
-    function viewTokenHolderTranscReward() external view returns (uint256 rewardAmount) {
+    function viewTokenHolderTranscReward() 
+        external 
+        view 
+        returns (uint256 rewardAmount) 
+    {
         
         uint256 _day = currentGriseDay();
-        require( 
-            balanceOf(_msgSender()) > 0,
-            'GRISE - Token holder doesnot enough balance to claim reward'
-        );
         
-        if( isTranscFeeClaimed[_msgSender()][calculateGriseWeek(_day)] ||  
+        if( (balanceOf(_msgSender()) <= 0) ||
+            isTranscFeeClaimed[_msgSender()][calculateGriseWeek(_day)] ||  
             calculateGriseWeek(_day) != currentGriseWeek())
         {
             rewardAmount = 0;
@@ -546,8 +515,10 @@ contract GriseToken is Utils {
         }
     }
     
-    function claimTokenHolderTranscReward() external returns (uint256 rewardAmount){
-        
+    function claimTokenHolderTranscReward()
+        external 
+        returns (uint256 rewardAmount)
+    {    
         uint256 _day = currentGriseDay();
         require( 
             balanceOf(_msgSender()) > 0,
@@ -585,22 +556,55 @@ contract GriseToken is Utils {
 
         TranscFeeClaimed(_msgSender(), currentGriseWeek(), rewardAmount);
     }
-        
-    function updateStakedToken(uint256 _stakedToken) external {
-        
+
+    function setStaker(
+        address _staker
+    ) 
+        external
+    {    
         require(
             _msgSender() == STAKE_GATEKEEPER,
             'GRISE: Operation not allowed'
         );
         
-        // _stakedToken = _stakedToken.mul(TEMP_PRECISION); // VIJAY
+        staker[_staker] = staker[_staker] + 1;
+    }
+    
+    function resetStaker(
+        address _staker
+    ) 
+        external
+    {    
+        require(
+            _msgSender() == STAKE_GATEKEEPER,
+            'GRISE: Operation not allowed'
+        );
         
+        if (staker[_staker] > 0)
+        {
+            staker[_staker] = staker[_staker] - 1;
+        }
+    }
+
+    function updateStakedToken(
+        uint256 _stakedToken
+    ) 
+        external
+    {
+        require(
+            _msgSender() == STAKE_GATEKEEPER,
+            'GRISE: Operation not allowed'
+        );
+            
         stakedToken = _stakedToken;
         totalToken[currentGriseDay()] = totalSupply().add(stakedToken);
     }
 
-    function updateMedTermShares(uint256 _shares) external {
-        
+    function updateMedTermShares(
+        uint256 _shares
+    ) 
+        external
+    {    
         require(
             _msgSender() == STAKE_GATEKEEPER,
             'GRISE: Operation not allowed'
@@ -609,14 +613,14 @@ contract GriseToken is Utils {
         mediumTermShares = _shares;
     }
 
-    function getEpocTime() external view returns (uint256){
-        return block.timestamp;
-    }
-
-    function getTransFeeReward(uint256 _fromDay, uint256 _toDay) 
-                external view 
-                returns (uint256 rewardAmount){
-
+    function getTransFeeReward(
+        uint256 _fromDay,
+        uint256 _toDay
+    ) 
+        external 
+        view 
+        returns (uint256 rewardAmount)
+    {
         require(
             _msgSender() == STAKE_GATEKEEPER,
             'GRISE: Operation not allowed'
@@ -628,10 +632,13 @@ contract GriseToken is Utils {
         }
     }
 
-    function getReservoirReward(uint256 _fromDay, uint256 _toDay) 
-            external view 
-            returns (uint256 rewardAmount){
-
+    function getReservoirReward(
+        uint256 _fromDay,
+        uint256 _toDay
+    ) 
+        external view 
+        returns (uint256 rewardAmount)
+    {
         require(
             _msgSender() == STAKE_GATEKEEPER,
             'GRISE: Operation not allowed'
@@ -643,9 +650,13 @@ contract GriseToken is Utils {
         }
     }
 
-    function getTokenHolderReward(uint256 _fromDay, uint256 _toDay) 
-            external view 
-            returns (uint256 rewardAmount){
+    function getTokenHolderReward(
+        uint256 _fromDay,
+        uint256 _toDay
+    ) 
+        external view 
+        returns (uint256 rewardAmount)
+    {
 
         require(
             _msgSender() == STAKE_GATEKEEPER,
@@ -660,18 +671,49 @@ contract GriseToken is Utils {
         }
     }
 
-    function timeToClaimWeeklyReward() public view returns (uint256 _days) {
+    function timeToClaimWeeklyReward() 
+        public
+        view
+        returns (uint256 _days)
+    {
         _days = currentGriseDay().mod(GRISE_WEEK) > 0 ?
                     GRISE_WEEK - currentGriseDay().mod(GRISE_WEEK) :
                     0;
     }
 
-    function balanceOfStaker(address account) external view returns (uint256) {
+    function balanceOfStaker(
+        address account
+    ) 
+        external
+        view
+        returns (uint256)
+    {
         return _balances[account];
     }
 
-    function getLaunchTime() external view returns (uint256) {
+    function getEpocTime() 
+        external
+        view 
+        returns (uint256)
+    {
+        return block.timestamp;
+    }
+
+    function getLaunchTime()
+        external
+        view
+        returns (uint256)
+    {
         return LAUNCH_TIME;
     }
 
+    function isStaker(
+        address _staker
+    ) 
+        external
+        view
+        returns (bool status)
+    {
+        status = (staker[_staker] > 0) ? true : false;
+    }
 }

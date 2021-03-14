@@ -49,8 +49,6 @@ abstract contract Declaration is Context, Events {
     uint16 constant TEAM_BUY_TRANS_REWARD = 1667; // 16.67 multiple 1E2 Precisions
     uint16 constant BUY_TRANS_BURN = 8333;
     address constant TEAM_ADDRESS = 0x7FF1F8C467114BfBbCC56E406c0Ec21E781bB959; // My Address
-
-    // uint256 constant TEMP_PRECISION = 1E18; // VIJAY
     
     constructor() {
         LAUNCH_TIME = block.timestamp;//1604966400; // (10th November 2020 @00:00 GMT == day 0)
@@ -65,5 +63,5 @@ abstract contract Declaration is Context, Events {
     mapping(uint256 => uint256) internal tokenHolderReward;
     mapping(address => mapping(uint256 => bool)) internal isTranscFeeClaimed;
     mapping(uint256 => uint256) internal totalToken;
-    mapping(address => uint16) internal isStaker;
+    mapping(address => uint16) internal staker;
 }
