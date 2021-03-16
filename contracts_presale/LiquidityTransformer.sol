@@ -62,9 +62,8 @@ contract LiquidityTransformer {
     mapping(uint256 => uint256) public dailyTotalInvestment;
     mapping(uint256 => uint256) public dailySlots;
     
-    uint256 constant START_DAY = 1;
-    uint256 public totalInvestment;
-    uint128 constant GAS_REFUND_THRESHOLD = 200 ether;
+    uint8 public totalTransactions;
+    uint8 constant GAS_REFUND_THRESHOLD = 200;
 
     mapping(uint256 => uint256) public investorAccountCount;
     mapping(uint256 => mapping(uint256 => address)) public investorAccounts;
@@ -162,7 +161,7 @@ contract LiquidityTransformer {
         uint256 gasSpent = (21000 + gasStart - gasleft()).mul(tx.gasprice);
         gasSpent = msg.value.div(10) > gasSpent ? gasSpent : msg.value.div(10);
         
-        if(totalInvestment <= GAS_REFUND_THRESHOLD){
+        if(totalTransactions <= GAS_REFUND_THRESHOLD){
         REFUND_SPONSOR.addGasRefund(msg.sender, gasSpent);
         }
     }
@@ -173,7 +172,7 @@ contract LiquidityTransformer {
         uint256 gasSpent = (21000 + gasStart - gasleft()).mul(tx.gasprice);
         gasSpent = gasSpent > 5000000000000000 ? 5000000000000000 : gasSpent;
         
-        if(totalInvestment <= GAS_REFUND_THRESHOLD){
+        if(totalTransactions <= GAS_REFUND_THRESHOLD){
         REFUND_SPONSOR.addGasRefund(msg.sender, gasSpent);
         }
     }
@@ -220,7 +219,6 @@ contract LiquidityTransformer {
     constructor(address _griseToken, Randomness _randomness) {
         randomness=_randomness;
         GRISE_CONTRACT = IGriseToken(_griseToken);
-        dailySlots[START_DAY]++;
 
         dailyMinSupply[1] = 6000;
         dailyMinSupply[2] = 6000;
@@ -492,7 +490,7 @@ contract LiquidityTransformer {
 
         investorBalances[_senderAddress][_investmentDay] += _investmentBalance;
         dailyTotalInvestment[_investmentDay] += _investmentBalance;
-        totalInvestment += _investmentBalance;
+        totalTransactions++;
 
         emit GriseReservation(
             _senderAddress,
@@ -904,6 +902,20 @@ contract LiquidityTransformer {
       */
     function myTotalInvestmentAmount() external view returns (uint256) {
         return investorTotalBalance[msg.sender];
+    }
+
+    /** @notice checks for callers total claimable amount (with refferal bonus)
+      * @return total claimable amount across all investment days (with refferal bonus)
+      */
+    function myClaimAmountAllDays() external view returns (uint256) {
+        uint256 _payout;
+        for (uint256 i = 1; i <= INVESTMENT_DAYS; i++) {
+            _payout += investorBalances[msg.sender][i].mul(
+                    _calculateDailyRatio(i)
+                ).div(100E18);
+        }
+
+        return _payout + referralTokens[msg.sender];
     }
 
 
