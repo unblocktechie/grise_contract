@@ -707,6 +707,14 @@ contract GriseToken is Utils {
         return LAUNCH_TIME;
     }
 
+    function getLPLaunchTime()
+        external
+        view
+        returns (uint256)
+    {
+        return LP_LAUNCH_TIME;
+    }
+
     function isStaker(
         address _staker
     ) 

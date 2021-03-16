@@ -37,6 +37,7 @@ abstract contract Declaration is Context, Events {
     uint64 constant PRECISION_RATE = 1E18;
     uint16 constant REWARD_PRECISION_RATE = 1E4;
     uint256 immutable LAUNCH_TIME;
+    uint256 immutable LP_LAUNCH_TIME; // PreSale Launch Time
     
     uint16 constant SELL_TRANS_FEE = 347; // 3.47% multiple 1E4 Precision
     uint16 constant TRANSC_RESERVOIR_REWARD = 3115;
@@ -52,6 +53,7 @@ abstract contract Declaration is Context, Events {
     
     constructor() {
         LAUNCH_TIME = block.timestamp;//1604966400; // (10th November 2020 @00:00 GMT == day 0)
+        LP_LAUNCH_TIME = block.timestamp;
     }
 
 
