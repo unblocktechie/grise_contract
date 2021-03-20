@@ -59,15 +59,21 @@ abstract contract Helper is Declaration {
     }
 
     function _stakeEligibleForWeeklyReward(Stake memory _stake) internal view returns (bool) {
+        uint256 curGriseDay = currentGriseDay();
+        
         return ( _stake.isActive && 
                 !_stakeNotStarted(_stake) &&
-                (_startingDay(_stake) < currentGriseDay().sub(currentGriseDay().mod(GRISE_WEEK))));
+                (_startingDay(_stake) < curGriseDay.sub(curGriseDay.mod(GRISE_WEEK)) ||
+                   curGriseDay >= _stake.finalDay));
     }
 
     function _stakeEligibleForMonthlyReward(Stake memory _stake) internal view returns (bool) {
+        uint256 curGriseDay = currentGriseDay();
+
         return ( _stake.isActive && 
                 !_stakeNotStarted(_stake) &&
-                (_startingDay(_stake) < currentGriseDay().sub(currentGriseDay().mod(GRISE_MONTH))));
+                (_startingDay(_stake) < curGriseDay.sub(curGriseDay.mod(GRISE_MONTH)) ||
+                   curGriseDay >= _stake.finalDay));
     }
 
     function _stakeEnded(Stake memory _stake) internal view returns (bool) {

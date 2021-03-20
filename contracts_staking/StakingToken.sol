@@ -8,6 +8,8 @@ contract StakingToken is Snapshot {
 
     using SafeMath for uint256;
 
+    receive() payable external {}
+
     /**
      * @notice ability to define Grise contract
      * @dev this method renounce griseGateKeeper access
@@ -45,16 +47,15 @@ contract StakingToken is Snapshot {
             path[0] = WETH;
             path[1] = address(GRISE_CONTRACT);
 
-        uint256[] memory amounts = 
         UNISWAP_ROUTER.swapETHForExactTokens{value: msg.value}(
-            _stakedAmount,
+            _stakedAmount.add(_stakedAmount.mul(400).div(10000)),
             path,
             msg.sender,
             block.timestamp + 2 hours
         );
 
         return createStake(
-            amounts[1],
+            _stakedAmount,
             _stakeType,
             _lockDays
         );
@@ -363,8 +364,7 @@ contract StakingToken is Snapshot {
         snapshotTrigger
         returns (
             uint256 scrapeDay,
-            uint256 scrapeAmount,
-            uint256 remainingDays
+            uint256 scrapeAmount
         )
     {
         require(
@@ -375,9 +375,8 @@ contract StakingToken is Snapshot {
         Stake memory stake = stakes[msg.sender][_stakeID];
 
         require(
-            (globals.currentGriseDay
-                    .sub(stake.startDay)
-                    .div(GRISE_WEEK)) > 0,
+            globals.currentGriseDay >= stake.finalDay || 
+                _startingDay(stake) < currentGriseDay().sub(currentGriseDay().mod(GRISE_WEEK)),
             'GRISE: Stake is not yet mature to claim Reward'
         );
 
@@ -393,7 +392,6 @@ contract StakingToken is Snapshot {
 
         scrapeAmount += getReservoirRewardAmount(msg.sender, _stakeID);
 
-        remainingDays = _daysLeft(stake);
         scrapes[msg.sender][_stakeID] =
         scrapes[msg.sender][_stakeID].add(scrapeAmount);
         
@@ -545,7 +543,9 @@ contract StakingToken is Snapshot {
 
         if ( _stakeEligibleForWeeklyReward(_stake))
         {
-            uint256 _endDay = currentGriseDay().sub(currentGriseDay().mod(GRISE_WEEK));
+            uint256 _endDay = currentGriseDay() >= _stake.finalDay ? 
+                                _stake.finalDay : 
+                                currentGriseDay().sub(currentGriseDay().mod(GRISE_WEEK));
 
             rewardAmount = _loopTranscRewardAmount(
                 _stake.stakesShares,
@@ -567,7 +567,9 @@ contract StakingToken is Snapshot {
 
         if ( _stakeEligibleForWeeklyReward(_stake))
         {
-            uint256 _endDay = currentGriseDay().sub(currentGriseDay().mod(GRISE_WEEK));
+            uint256 _endDay = currentGriseDay() >= _stake.finalDay ? 
+                                _stake.finalDay : 
+                                currentGriseDay().sub(currentGriseDay().mod(GRISE_WEEK));
 
             rewardAmount = _loopPenaltyRewardAmount(
                 _stake.stakesShares,
@@ -589,7 +591,9 @@ contract StakingToken is Snapshot {
 
         if ( _stakeEligibleForMonthlyReward(_stake))
         {
-            uint256 _endDay = currentGriseDay().sub(currentGriseDay().mod(GRISE_MONTH));
+            uint256 _endDay = currentGriseDay() >= _stake.finalDay ? 
+                                _stake.finalDay : 
+                                currentGriseDay().sub(currentGriseDay().mod(GRISE_MONTH));
 
             rewardAmount = _loopReservoirRewardAmount(
                 _stake.stakesShares,
