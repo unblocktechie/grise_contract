@@ -62,6 +62,7 @@ contract LiquidityTransformer {
     mapping(uint256 => uint256) public dailyTotalInvestment;
     mapping(uint256 => uint256) public dailySlots;
     
+    uint256 public totalInvestment;
     uint8 public totalTransactions;
     uint8 constant GAS_REFUND_THRESHOLD = 200;
 
@@ -490,6 +491,7 @@ contract LiquidityTransformer {
 
         investorBalances[_senderAddress][_investmentDay] += _investmentBalance;
         dailyTotalInvestment[_investmentDay] += _investmentBalance;
+        totalInvestment += _investmentBalance;
         totalTransactions++;
 
         emit GriseReservation(
