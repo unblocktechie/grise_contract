@@ -69,6 +69,7 @@ contract LiquidityTransformer {
     mapping(uint256 => uint256) public investorAccountCount;
     mapping(uint256 => mapping(uint256 => address)) public investorAccounts;
     mapping(address => mapping(uint256 => uint256)) public investorBalances;
+    mapping(address => mapping(uint256 => uint256)) public investorBalancesRecord;
 
     mapping(address => uint256) public referralAmount;
     mapping(address => uint256) public referralTokens;
@@ -490,6 +491,7 @@ contract LiquidityTransformer {
         }
 
         investorBalances[_senderAddress][_investmentDay] += _investmentBalance;
+        investorBalancesRecord[_senderAddress][_investmentDay] += _investmentBalance;
         dailyTotalInvestment[_investmentDay] += _investmentBalance;
         totalInvestment += _investmentBalance;
         totalTransactions++;
