@@ -886,10 +886,18 @@ contract LiquidityTransformer {
     //  ------------------------------  //
 
     /** @notice checks for callers investment amount on specific day (with bonus)
-      * @return total amount invested across all investment days (with bonus)
+      * @return total amount invested across specific investment day (with bonus)
       */
     function myInvestmentAmount(uint256 _investmentDay) external view returns (uint256) {
         return investorBalances[msg.sender][_investmentDay];
+    }
+
+    /** @notice checks for callers claimable amount on specific day (with bonus)
+      * @return total amount claimable across specific investment day (with bonus)
+      */
+    function myClaimAmount(uint256 _investmentDay) external view returns (uint256) {
+        return investorBalances[msg.sender][_investmentDay].mul(
+                    _calculateDailyRatio(_investmentDay)).div(100E18);
     }
 
     /** @notice checks for callers investment amount on each day (with bonus)
