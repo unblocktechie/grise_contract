@@ -896,8 +896,12 @@ contract LiquidityTransformer {
       * @return total amount claimable across specific investment day (with bonus)
       */
     function myClaimAmount(uint256 _investmentDay) external view returns (uint256) {
-        return investorBalances[msg.sender][_investmentDay].mul(
+        if (investorBalances[msg.sender][_investmentDay] > 0) {
+            return investorBalances[msg.sender][_investmentDay].mul(
                     _calculateDailyRatio(_investmentDay)).div(100E18);
+        }else{
+            return 0;
+        }            
     }
 
     /** @notice checks for callers investment amount on each day (with bonus)
@@ -922,9 +926,11 @@ contract LiquidityTransformer {
     function myClaimAmountAllDays() external view returns (uint256) {
         uint256 _payout;
         for (uint256 i = 1; i <= INVESTMENT_DAYS; i++) {
-            _payout += investorBalances[msg.sender][i].mul(
+            if (investorBalances[msg.sender][i] > 0) {
+                _payout += investorBalances[msg.sender][i].mul(
                     _calculateDailyRatio(i)
                 ).div(100E18);
+            }    
         }
 
         return _payout + referralTokens[msg.sender];
