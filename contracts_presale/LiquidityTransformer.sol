@@ -12,17 +12,12 @@ contract LiquidityTransformer {
 
     Randomness public randomness;
     IGriseToken public GRISE_CONTRACT;
+    RefundSponsorI public REFUND_SPONSOR;
    
     UniswapRouterV2 public constant UNISWAP_ROUTER = UniswapRouterV2(
         // 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D // mainnet
          0xf164fC0Ec4E93095b804a4795bBe1e041497b92a // ropsten
         //0x57079e0d0657890218C630DA5248A1103a1b4ad0 // local
-    );
-
-    RefundSponsorI public constant REFUND_SPONSOR = RefundSponsorI(
-        // 0xc3FC68dDdB1bf4Cb61307eEf89729DC317f2325a // mainnet
-        0xdf783c5334bA51829EE8D41b16ef1D1C8eC909CA    //ropsten
-        //0xd9145CCE52D386f254917e481eB44e9943F39138 // local
     );
 
     address payable constant TEAM_ADDRESS = 0x5B38Da6a701c568545dCfcB03FcB875f56beddC4;
@@ -218,9 +213,10 @@ contract LiquidityTransformer {
         TOKEN_DEFINER = address(0x0);
     }
 
-    constructor(address _griseToken, Randomness _randomness) {
+    constructor(address _griseToken, Randomness _randomness, address _refundSponsor) {
         randomness=_randomness;
         GRISE_CONTRACT = IGriseToken(_griseToken);
+        REFUND_SPONSOR = RefundSponsorI(_refundSponsor);
 
         dailyMinSupply[1] = 6000;
         dailyMinSupply[2] = 6000;
