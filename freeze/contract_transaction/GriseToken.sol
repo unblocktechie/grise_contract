@@ -681,6 +681,16 @@ contract GriseToken is Utils {
                     0;
     }
 
+    function timeToClaimMonthlyReward() 
+        public 
+        view 
+        returns (uint256 _days)
+    {
+        _days = currentGriseDay().mod(GRISE_MONTH) > 0 ?
+                    GRISE_MONTH - currentGriseDay().mod(GRISE_MONTH) :
+                    0;
+    }
+
     function balanceOfStaker(
         address account
     ) 
