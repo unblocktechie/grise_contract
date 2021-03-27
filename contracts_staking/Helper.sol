@@ -116,18 +116,6 @@ abstract contract Helper is Declaration {
             _stake.lockDays - 1 : 1;
     }
 
-    function timeToClaimWeeklyReward() public view returns (uint256 _days) {
-        _days = currentGriseDay().mod(GRISE_WEEK) > 0 ?
-                    GRISE_WEEK - currentGriseDay().mod(GRISE_WEEK) :
-                    0;
-    }
-
-    function timeToClaimMonthlyReward() public view returns (uint256 _days) {
-        _days = currentGriseDay().mod(GRISE_MONTH) > 0 ?
-                    GRISE_MONTH - currentGriseDay().mod(GRISE_MONTH) :
-                    0;
-    }
-
     function stakesPagination(
         address _staker,
         uint256 _offset,

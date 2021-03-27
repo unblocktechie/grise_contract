@@ -48,9 +48,12 @@ abstract contract Declaration is Global {
     address public griseGateKeeper;
     address public contractDeployer;
 
-    constructor() {
+    constructor(address _immutableAddress) 
+    {
         griseGateKeeper = msg.sender;
         contractDeployer = msg.sender;
+
+        GRISE_CONTRACT = IGriseToken(_immutableAddress);
 
         // Min-Max Staking Day limit
         stakeDayLimit[StakeType.SHORT_TERM].minStakeDay = 1 * GRISE_WEEK;   // Min 1 Week
@@ -115,7 +118,7 @@ abstract contract Declaration is Global {
     mapping(uint256 => uint256) public totalPenalties;
     mapping(uint256 => uint256) public MLTPenaltiesRewardPerShares; // Medium/Long Term Penatly Reward
     mapping(uint256 => uint256) public STPenaltiesRewardPerShares;  // Short Term Penatly Reward
-    mapping(uint256 => uint256) public ReservoirPenaltiesRewardPerShares;  // Short Term Penatly Reward)
+    mapping(uint256 => uint256) public ReservoirPenaltiesRewardPerShares;  // Short Term Penatly Reward
 
     mapping(StakeType => StakeMinMaxDay) public stakeDayLimit;
     mapping(StakeType => mapping(uint8 => StakeCapping)) public stakeCaps;

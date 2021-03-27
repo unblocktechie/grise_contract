@@ -4,13 +4,6 @@ pragma solidity =0.7.6;
 
 interface IUniswapRouterV2 {
 
-    function getAmountsOut(
-        uint amountIn,
-        address[] calldata path
-    ) external view returns (
-        uint[] memory amounts
-    );
-
     function swapETHForExactTokens(
         uint amountOut,
         address[] calldata path,

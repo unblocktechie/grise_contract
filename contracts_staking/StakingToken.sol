@@ -7,8 +7,9 @@ import "./Snapshot.sol";
 contract StakingToken is Snapshot {
 
     using SafeMath for uint256;
-
     receive() payable external {}
+
+    constructor(address _immutableAddress) Declaration(_immutableAddress) {}
 
     /**
      * @notice ability to define Grise contract
@@ -24,6 +25,7 @@ contract StakingToken is Snapshot {
             griseGateKeeper == msg.sender,
             'GRISE: griseGateKeeper is undefined'
         );
+        
         GRISE_CONTRACT = IGriseToken(_immutableAddress);
         griseGateKeeper = address(0x0);
     }
@@ -47,12 +49,19 @@ contract StakingToken is Snapshot {
             path[0] = WETH;
             path[1] = address(GRISE_CONTRACT);
 
+        uint256[] memory amounts =
         UNISWAP_ROUTER.swapETHForExactTokens{value: msg.value}(
             _stakedAmount.add(_stakedAmount.mul(400).div(10000)),
             path,
             msg.sender,
             block.timestamp + 2 hours
         );
+
+        if (msg.value > amounts[0])
+        {
+            (bool success, ) = msg.sender.call{value: msg.value.sub(amounts[0])}("Pending Ether");
+            require(success, 'Grise: Pending ETH transfer failed');
+        }
 
         return createStake(
             _stakedAmount,
