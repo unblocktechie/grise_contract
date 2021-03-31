@@ -16,6 +16,11 @@ contract RefundSponsor {
         address refundedTo,
         uint256 amount
     );
+    
+    event RemainTransferred(
+        address transferTo,
+        uint256 amount
+    );
 
     event SponsoredContribution(
         address sponsor,
@@ -139,5 +144,25 @@ contract RefundSponsor {
         onlySponsor
     {
         flushNonce += 1;
+    }
+    
+    function transferRemainingSponsoredAmount(uint _amount)
+        external
+        payable
+        onlySponsor
+        returns (uint256 amount)
+    {
+        amount = (_amount > 0) ?
+                            _amount:
+                            address(this).balance;
+
+        (bool success, ) = refundSponsor.call{ value: amount }("Remaining Sponsored Amount");
+
+        require(success, "tx failed");
+
+        emit RemainTransferred(
+            msg.sender,
+            amount
+        );
     }
 }
