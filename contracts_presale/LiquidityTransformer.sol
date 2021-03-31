@@ -23,7 +23,7 @@ contract LiquidityTransformer {
     address payable constant TEAM_ADDRESS = 0x5B38Da6a701c568545dCfcB03FcB875f56beddC4;
     address payable constant DEV_ADDRESS = 0x5B38Da6a701c568545dCfcB03FcB875f56beddC4;
     address payable constant BOUNTY_ADDRESS = 0x5B38Da6a701c568545dCfcB03FcB875f56beddC4;
-    address public TOKEN_DEFINER = 0x5B38Da6a701c568545dCfcB03FcB875f56beddC4;
+    address public TOKEN_DEFINER;
 
     // address constant WETH = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2; // mainnet
      address constant WETH = 0xc778417E063141139Fce010982780140Aa0cD5Ab; // ropsten
@@ -217,6 +217,7 @@ contract LiquidityTransformer {
         randomness=_randomness;
         GRISE_CONTRACT = IGriseToken(_griseToken);
         REFUND_SPONSOR = RefundSponsorI(_refundSponsor);
+        TOKEN_DEFINER = msg.sender;
 
         dailyMinSupply[1] = 6000;
         dailyMinSupply[2] = 6000;
