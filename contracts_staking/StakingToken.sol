@@ -607,7 +607,8 @@ contract StakingToken is Snapshot {
             rewardAmount = _loopReservoirRewardAmount(
                 _stake.stakesShares,
                 _startingDay(_stake),
-                _endDay
+                _endDay,
+                _stake.stakeType
             );
         }
     }
@@ -721,7 +722,8 @@ contract StakingToken is Snapshot {
         _rewardAmount += _loopReservoirRewardAmount(
             _stake.stakesShares,
             _startingDay(_stake),
-            _calculationDay(_stake)
+            _calculationDay(_stake),
+            _stake.stakeType
         );
         
         _rewardAmount += _loopInflationRewardAmount(
@@ -791,12 +793,18 @@ contract StakingToken is Snapshot {
     function _loopReservoirRewardAmount(
         uint256 _stakeShares,
         uint256 _startDay,
-        uint256 _finalDay
+        uint256 _finalDay,
+        StakeType _stakeType
     )
         private
         view
         returns (uint256 _rewardAmount)
     {
+
+        if (_stakeType == StakeType.SHORT_TERM)
+        {
+            return 0;
+        }
         
         for (uint256 day = _startDay; day < _finalDay; day++) 
         {
