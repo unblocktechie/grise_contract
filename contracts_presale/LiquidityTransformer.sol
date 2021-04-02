@@ -20,9 +20,8 @@ contract LiquidityTransformer {
         //0x57079e0d0657890218C630DA5248A1103a1b4ad0 // local
     );
 
-    address payable constant TEAM_ADDRESS = 0x5B38Da6a701c568545dCfcB03FcB875f56beddC4;
+    address payable constant TEAM_ADDRESS = 0xa377433831E83C7a4Fa10fB75C33217cD7CABec2; 
     address payable constant DEV_ADDRESS = 0x5B38Da6a701c568545dCfcB03FcB875f56beddC4;
-    address payable public BOUNTY_ADDRESS;
     address public TOKEN_DEFINER;
 
     // address constant WETH = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2; // mainnet
@@ -189,7 +188,6 @@ contract LiquidityTransformer {
             msg.sender == address(UNISWAP_ROUTER) ||
             msg.sender == TEAM_ADDRESS ||
             msg.sender == DEV_ADDRESS ||
-            msg.sender == BOUNTY_ADDRESS ||
             msg.sender == TOKEN_DEFINER,
             'GRISE: direct deposits disabled'
         );
@@ -213,11 +211,10 @@ contract LiquidityTransformer {
         TOKEN_DEFINER = address(0x0);
     }
 
-    constructor(address _griseToken, Randomness _randomness, address _refundSponsor, address payable _bounty) {
+    constructor(address _griseToken, Randomness _randomness, address _refundSponsor) {
         randomness=_randomness;
         GRISE_CONTRACT = IGriseToken(_griseToken);
         REFUND_SPONSOR = RefundSponsorI(_refundSponsor);
-        BOUNTY_ADDRESS = _bounty;
         TOKEN_DEFINER = msg.sender;
 
         dailyMinSupply[1] = 6000;
@@ -703,17 +700,19 @@ contract LiquidityTransformer {
 
         _balance = _balance.sub(
             _teamContribution(
-                _balance.mul(9).div(100)
+                _balance.mul(6).div(100)
             )
         );
 
         _buffer = _buffer.mul(_balance).div(
             g.totalWeiContributed
         );
+        
 
         GRISE_CONTRACT.mintSupply(
             address(this), _buffer
         );
+        
 
         GRISE_CONTRACT.approve(
             address(UNISWAP_ROUTER), _buffer
@@ -1096,9 +1095,8 @@ contract LiquidityTransformer {
         external
         afterUniswapTransfer
     {
-        TEAM_ADDRESS.transfer(TEAM_ETHER.mul(5).div(9));
-        DEV_ADDRESS.transfer(TEAM_ETHER.div(9));
-        BOUNTY_ADDRESS.transfer(TEAM_ETHER.div(3));
+        TEAM_ADDRESS.transfer(TEAM_ETHER.mul(2).div(3));
+        DEV_ADDRESS.transfer(TEAM_ETHER.div(3));
     }
 
     function notContract(address _addr) internal view returns (bool) {
@@ -1148,4 +1146,3 @@ library SafeMathLT {
         return a % b;
     }
 }
-
