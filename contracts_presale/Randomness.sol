@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: --🦉--
+// SPDX-License-Identifier: --GRISE--
 pragma solidity =0.7.6;
 
 import "./nreAPI.sol";
