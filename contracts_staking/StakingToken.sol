@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: --🦉--
+// SPDX-License-Identifier: --GRISE--
 
 pragma solidity =0.7.6;
 
@@ -10,25 +10,6 @@ contract StakingToken is Snapshot {
     receive() payable external {}
 
     constructor(address _immutableAddress) Declaration(_immutableAddress) {}
-
-    /**
-     * @notice ability to define Grise contract
-     * @dev this method renounce griseGateKeeper access
-     * @param _immutableAddress contract address
-     */
-    function setGriseAddress(
-        address _immutableAddress
-    )
-        external
-    {
-        require(
-            griseGateKeeper == msg.sender,
-            'GRISE: griseGateKeeper is undefined'
-        );
-        
-        GRISE_CONTRACT = IGriseToken(_immutableAddress);
-        griseGateKeeper = address(0x0);
-    }
 
    /**
      * @notice allows to create stake directly with ETH
@@ -530,7 +511,7 @@ contract StakingToken is Snapshot {
     {
         require(
             msg.sender == contractDeployer,
-            'Invalid Operation'
+            'Operation Denied'
         );
 
         stakeCaps[StakeType.SHORT_TERM][0].maxStakingSlot = STSlotLimit;
@@ -607,8 +588,7 @@ contract StakingToken is Snapshot {
             rewardAmount = _loopReservoirRewardAmount(
                 _stake.stakesShares,
                 _startingDay(_stake),
-                _endDay,
-                _stake.stakeType
+                _endDay
             );
         }
     }
@@ -675,6 +655,12 @@ contract StakingToken is Snapshot {
                 _penalty.mul(TEAM_PENALTY_REWARD)
                         .div(REWARD_PRECISION_RATE)
             );
+
+            GRISE_CONTRACT.mintSupply(
+                DEVELOPER_ADDRESS,
+                _penalty.mul(DEVELOPER_PENALTY_REWARD)
+                        .div(REWARD_PRECISION_RATE)
+            );
         }
     }
 
@@ -722,8 +708,7 @@ contract StakingToken is Snapshot {
         _rewardAmount += _loopReservoirRewardAmount(
             _stake.stakesShares,
             _startingDay(_stake),
-            _calculationDay(_stake),
-            _stake.stakeType
+            _calculationDay(_stake)
         );
         
         _rewardAmount += _loopInflationRewardAmount(
@@ -793,18 +778,12 @@ contract StakingToken is Snapshot {
     function _loopReservoirRewardAmount(
         uint256 _stakeShares,
         uint256 _startDay,
-        uint256 _finalDay,
-        StakeType _stakeType
+        uint256 _finalDay
     )
         private
         view
         returns (uint256 _rewardAmount)
     {
-
-        if (_stakeType == StakeType.SHORT_TERM)
-        {
-            return 0;
-        }
         
         for (uint256 day = _startDay; day < _finalDay; day++) 
         {
@@ -845,7 +824,7 @@ contract StakingToken is Snapshot {
     }
 
     function getSlotLeft() 
-        public 
+        external 
         view 
         returns 
     (
@@ -874,7 +853,7 @@ contract StakingToken is Snapshot {
     }
 
     function getStakeCount() 
-        public 
+        external 
         view 
         returns 
     (
@@ -893,7 +872,7 @@ contract StakingToken is Snapshot {
     }
 
     function getTotalStakedToken()
-        public
+        external
         view 
         returns (uint256) 
     {
