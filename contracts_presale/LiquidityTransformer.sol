@@ -702,7 +702,7 @@ contract LiquidityTransformer {
 
         _balance = _balance.sub(
             _teamContribution(
-                _balance.mul(6).div(100)
+                _balance.mul(4).div(100)
             )
         );
 
@@ -710,7 +710,7 @@ contract LiquidityTransformer {
             g.totalWeiContributed
         );
         
-        _bounty = _bounty.add(_buffer.mul(6).div(100));
+        _bounty = _bounty.add(_buffer.mul(4).div(100));
         
 
         GRISE_CONTRACT.mintSupply(
