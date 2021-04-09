@@ -37,7 +37,7 @@ contract LiquidityTransformer {
     uint128 constant MIN_INVEST = 100000000000000000 wei;   
     uint128 constant DAILY_MAX_SUPPLY = 12000;
     
-    uint256 constant YODAS_PER_GRISE = 10 ** uint256(18);
+    uint256 constant GODAS_PER_GRISE = 10 ** uint256(18);
     uint256 constant NUM_RANDOM_BYTES_REQUESTED = 7;
 
     struct Globals {
@@ -570,7 +570,7 @@ contract LiquidityTransformer {
     )
         internal
     {
-        dailyTotalSupply[_investmentDay] = dailyMinSupply[_investmentDay] * YODAS_PER_GRISE;
+        dailyTotalSupply[_investmentDay] = dailyMinSupply[_investmentDay] * GODAS_PER_GRISE;
         g.totalTransferTokens += dailyTotalSupply[_investmentDay];
 
         g.generatedDays++;
@@ -596,7 +596,7 @@ contract LiquidityTransformer {
         g.generatedDays = g.generatedDays + 1;
         dailyTotalSupply[_investmentDay] = dailyMinSupply[_investmentDay]
             .add(randomSupply)
-            .mul(YODAS_PER_GRISE);
+            .mul(GODAS_PER_GRISE);
 
         g.totalTransferTokens = g.totalTransferTokens
             .add(dailyTotalSupply[_investmentDay]);
