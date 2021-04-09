@@ -1,32 +1,14 @@
-// SPDX-License-Identifier: --🦉--
+// SPDX-License-Identifier: --GRISE--
 
 import "./Context.sol";
 import "./Events.sol";
 
 pragma solidity =0.7.6;
 
-interface ERC20TokenI {
-
-    function transferFrom(
-        address _from,
-        address _to,
-        uint256 _value
-    )  external returns (
-        bool success
-    );
-
-    function approve(
-        address _spender,
-        uint256 _value
-    )  external returns (
-        bool successs
-    );
-}
-
 abstract contract Declaration is Context, Events {
 
     uint256 constant _decimals = 18;
-    uint256 constant YODAS_PER_GRISE = 10 ** _decimals;
+    uint256 constant GODA_PER_GRISE = 10 ** _decimals;
 
     uint32 constant SECONDS_IN_DAY = 3 minutes;//86400 seconds; // 24 hours
     uint32 constant SECONDS_IN_DAY_LP = 4 hours; // 4 hours
@@ -49,7 +31,8 @@ abstract contract Declaration is Context, Events {
     uint16 constant BUY_TRANS_FEE = 30; // .30 multiple 1E4 Precision
     uint16 constant TEAM_BUY_TRANS_REWARD = 1667; // 16.67 multiple 1E2 Precisions
     uint16 constant BUY_TRANS_BURN = 8333;
-    address constant TEAM_ADDRESS = 0x7FF1F8C467114BfBbCC56E406c0Ec21E781bB959; // My Address
+    address constant TEAM_ADDRESS = 0xa377433831E83C7a4Fa10fB75C33217cD7CABec2;
+    address constant DEVELOPER_ADDRESS = 0x7FF1F8C467114BfBbCC56E406c0Ec21E781bB959;
     
     constructor() {
         LAUNCH_TIME = block.timestamp;//1604966400; // (10th November 2020 @00:00 GMT == day 0)
@@ -59,7 +42,7 @@ abstract contract Declaration is Context, Events {
 
     uint256 internal stakedToken;
     uint256 internal mediumTermShares;
-    mapping(uint256 => uint256) public sellTranscFee;  // week ==> weekly Accumalted transc fee
+    mapping(uint256 => uint256) internal sellTranscFee;  // week ==> weekly Accumalted transc fee
     mapping(uint256 => uint256) internal reservoirRewardPerShare;
     mapping(uint256 => uint256) internal stakerRewardPerShare;
     mapping(uint256 => uint256) internal tokenHolderReward;

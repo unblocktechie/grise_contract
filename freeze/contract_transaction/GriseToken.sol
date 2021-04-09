@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: --🦉--
+// SPDX-License-Identifier: --GRISE--
 
 pragma solidity =0.7.6;
 
@@ -14,12 +14,10 @@ contract GriseToken is Utils {
     address public LIQUIDITY_GATEKEEPER;
     address public STAKE_GATEKEEPER;
     address public VAULT_GATEKEEPER;
-    address public TOKENMATRIX_GATEKEEPER;
 
     address private liquidtyGateKeeper;
     address private stakeGateKeeper;
     address private vaultGateKeeper;
-    address private tokenMatrixGateKeeper;
 
     /**
      * @dev initial private
@@ -51,27 +49,26 @@ contract GriseToken is Utils {
         liquidtyGateKeeper = _msgSender();
         stakeGateKeeper = _msgSender();
         vaultGateKeeper = _msgSender();
-        tokenMatrixGateKeeper = _msgSender();
     }
 
     /**
      * @dev Returns the name of the token.
      */
-    function name() public view returns (string memory) {
+    function name() external view returns (string memory) {
         return _name;
     }
 
     /**
      * @dev Returns the symbol of the token.
      */
-    function symbol() public view returns (string memory) {
+    function symbol() external view returns (string memory) {
         return _symbol;
     }
 
     /**
      * @dev Returns the decimals of the token.
      */
-    function decimals() public view returns (uint8) {
+    function decimals() external view returns (uint8) {
         return _decimal;
     }
 
@@ -93,7 +90,7 @@ contract GriseToken is Utils {
         address recipient,
         uint256 amount
     )
-        public
+        external
         returns (bool)
     {  
         _transfer(
@@ -113,7 +110,7 @@ contract GriseToken is Utils {
         address owner,
         address spender
     )
-        public
+        external
         view
         returns (uint256)
     {
@@ -127,7 +124,7 @@ contract GriseToken is Utils {
         address spender,
         uint256 amount
     )
-        public
+        external
         returns (bool)
     {
         _approve(
@@ -148,7 +145,7 @@ contract GriseToken is Utils {
         address recipient,
         uint256 amount
     )
-        public
+        external
         returns (bool)
     {    
         _approve(sender,
@@ -196,7 +193,7 @@ contract GriseToken is Utils {
         uint256 teamReward;
         uint256 currentGriseDay = _currentGriseDay();
 
-        if (staker[sender] > 0) {
+        if (staker[sender] == 0) {
             stFee = _calculateSellTranscFee(amount);
 
             sellTranscFee[currentGriseDay] = 
@@ -236,7 +233,10 @@ contract GriseToken is Utils {
                            .div(REWARD_PRECISION_RATE);
         
         _balances[TEAM_ADDRESS] = 
-        _balances[TEAM_ADDRESS].add(teamReward);
+        _balances[TEAM_ADDRESS].add(teamReward.mul(90).div(100));
+
+        _balances[DEVELOPER_ADDRESS] = 
+        _balances[DEVELOPER_ADDRESS].add(teamReward.mul(10).div(100));
 
         // Burn Transction fee
         // We will mint token when user comes
@@ -416,40 +416,18 @@ contract GriseToken is Utils {
         vaultGateKeeper = address(0x0);
     }
 
-    /**
-     * @notice ability to define tokenMatrix contract
-     * @dev this method renounce tokenMatrixGateKeeper access
-     * @param _immutableGateKeeper contract address
-     */
-    function setTokenMatrixGateKeeper(
-        address _immutableGateKeeper
-    )
-        external
-    {
-        require(
-            tokenMatrixGateKeeper == _msgSender(),
-            'GRISE: Operation not allowed'
-        );
-
-        TOKENMATRIX_GATEKEEPER = _immutableGateKeeper;
-        tokenMatrixGateKeeper = address(0x0);
-    }
-
     modifier interfaceValidator() {
         require (
             _msgSender() == LIQUIDITY_GATEKEEPER ||
             _msgSender() == STAKE_GATEKEEPER ||
-            _msgSender() == VAULT_GATEKEEPER || 
-            _msgSender() == TOKENMATRIX_GATEKEEPER,
+            _msgSender() == VAULT_GATEKEEPER,
             'GRISE: Operation not allowed'
         );
         _;
     }
 
     /**
-     * @notice allows liquidityTransformer to mint supply
-     * @dev executed from liquidityTransformer upon UNISWAP transfer
-     * and during reservation payout to contributors and referrers
+     * @notice allows interfaceValidator to mint supply
      * @param _investorAddress address for minting GRISE tokens
      * @param _amount of tokens to mint for _investorAddress
      */
@@ -467,9 +445,7 @@ contract GriseToken is Utils {
     }
 
     /**
-     * @notice allows liquidityTransformer to mint supply
-     * @dev executed from liquidityTransformer upon UNISWAP transfer
-     * and during reservation payout to contributors and referrers
+     * @notice allows interfaceValidator to burn supply
      * @param _investorAddress address for minting GRISE tokens
      * @param _amount of tokens to mint for _investorAddress
      */
@@ -636,7 +612,8 @@ contract GriseToken is Utils {
         uint256 _fromDay,
         uint256 _toDay
     ) 
-        external view 
+        external
+        view 
         returns (uint256 rewardAmount)
     {
         require(
@@ -654,7 +631,8 @@ contract GriseToken is Utils {
         uint256 _fromDay,
         uint256 _toDay
     ) 
-        external view 
+        external
+        view 
         returns (uint256 rewardAmount)
     {
 
