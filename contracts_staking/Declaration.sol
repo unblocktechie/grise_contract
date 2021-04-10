@@ -7,7 +7,7 @@ import "./Global.sol";
 abstract contract Declaration is Global {
 
     uint256 constant _decimals = 18;
-    uint256 constant GODA_PER_GRISE = 10 ** _decimals; // 1 GRISE = 1E18 REI
+    uint256 constant REI_PER_GRISE = 10 ** _decimals; // 1 GRISE = 1E18 REI
     
     uint64 constant PRECISION_RATE = 1E18;
     uint32 constant REWARD_PRECISION_RATE = 1E4;
@@ -64,11 +64,11 @@ abstract contract Declaration is Global {
         stakeDayLimit[StakeType.LONG_TERM].maxStakeDay = 10 * GRISE_YEAR;  // Max 10 Year
 
         //Min Staking Amount limit
-        stakeCaps[StakeType.SHORT_TERM][0].minStakingAmount = 50 * GODA_PER_GRISE;   // 50 GRISE TOKEN
-        stakeCaps[StakeType.MEDIUM_TERM][0].minStakingAmount = 225 * GODA_PER_GRISE; // 225 GIRSE TOKEN
-        stakeCaps[StakeType.MEDIUM_TERM][1].minStakingAmount = 100 * GODA_PER_GRISE; // 100 GIRSE TOKEN
-        stakeCaps[StakeType.MEDIUM_TERM][2].minStakingAmount = 150 * GODA_PER_GRISE; // 150 GIRSE TOKEN
-        stakeCaps[StakeType.LONG_TERM][0].minStakingAmount = 100 * GODA_PER_GRISE;  // 100 GIRSE TOKEN
+        stakeCaps[StakeType.SHORT_TERM][0].minStakingAmount = 50 * REI_PER_GRISE;   // 50 GRISE TOKEN
+        stakeCaps[StakeType.MEDIUM_TERM][0].minStakingAmount = 225 * REI_PER_GRISE; // 225 GIRSE TOKEN
+        stakeCaps[StakeType.MEDIUM_TERM][1].minStakingAmount = 100 * REI_PER_GRISE; // 100 GIRSE TOKEN
+        stakeCaps[StakeType.MEDIUM_TERM][2].minStakingAmount = 150 * REI_PER_GRISE; // 150 GIRSE TOKEN
+        stakeCaps[StakeType.LONG_TERM][0].minStakingAmount = 100 * REI_PER_GRISE;  // 100 GIRSE TOKEN
 
         //Max Staking Slot Limit
         stakeCaps[StakeType.SHORT_TERM][0].maxStakingSlot = 1250;   // Max 1250 Slot Available
@@ -122,5 +122,4 @@ abstract contract Declaration is Global {
 
     mapping(StakeType => StakeMinMaxDay) public stakeDayLimit;
     mapping(StakeType => mapping(uint8 => StakeCapping)) public stakeCaps;
-
 }
