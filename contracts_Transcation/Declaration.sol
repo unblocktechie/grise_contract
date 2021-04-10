@@ -8,9 +8,9 @@ pragma solidity =0.7.6;
 abstract contract Declaration is Context, Events {
 
     uint256 constant _decimals = 18;
-    uint256 constant GODA_PER_GRISE = 10 ** _decimals;
+    uint256 constant REI_PER_GRISE = 10 ** _decimals;
 
-    uint32 constant SECONDS_IN_DAY = 3 minutes;//86400 seconds; // 24 hours
+    uint32 constant SECONDS_IN_DAY = 24 hours;//86400 seconds; // 24 hours
     uint32 constant SECONDS_IN_DAY_LP = 4 hours; // 4 hours
     uint32 constant GRISE_WEEK = 7;
     uint32 constant GRISE_MONTH = 4 * GRISE_WEEK;
@@ -35,6 +35,7 @@ abstract contract Declaration is Context, Events {
     address constant DEVELOPER_ADDRESS = 0x7FF1F8C467114BfBbCC56E406c0Ec21E781bB959;
     
     constructor() {
+        // Temperary set as current block timestamp 
         LAUNCH_TIME = block.timestamp;//1604966400; // (10th November 2020 @00:00 GMT == day 0)
         LP_LAUNCH_TIME = block.timestamp;
     }
