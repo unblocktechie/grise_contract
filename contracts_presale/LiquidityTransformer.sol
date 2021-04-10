@@ -698,11 +698,11 @@ contract LiquidityTransformer {
         uint256 _balance = g.totalWeiContributed;
         uint256 _buffer = g.totalTransferTokens + g.totalReferralTokens;
         
-        uint256 _bounty = _buffer.mul(6).div(100);
+        uint256 _bounty = _buffer.mul(4).div(100);
 
         _balance = _balance.sub(
             _teamContribution(
-                _balance.mul(4).div(100)
+                _balance.mul(6).div(100)
             )
         );
 
