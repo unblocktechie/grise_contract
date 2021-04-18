@@ -22,15 +22,15 @@ abstract contract Declaration is Context, Events {
     uint256 immutable LP_LAUNCH_TIME; // PreSale Launch Time
     
     uint16 constant SELL_TRANS_FEE = 347; // 3.47% multiple 1E4 Precision
-    uint16 constant TRANSC_RESERVOIR_REWARD = 3115;
-    uint16 constant TRANSC_STAKER_REWARD = 1633;
-    uint16 constant TRANSC_TOKEN_HOLDER_REWARD = 2612;
-    uint16 constant TEAM_SELL_TRANSC_REWARD = 1431;
-    uint16 constant SELL_TRANS_BURN = 1209;
+    uint16 constant TRANSC_RESERVOIR_REWARD = 3054;
+    uint16 constant TRANSC_STAKER_REWARD = 1642;
+    uint16 constant TRANSC_TOKEN_HOLDER_REWARD = 2622;
+    uint16 constant TEAM_SELL_TRANSC_REWARD = 1441;
+    uint16 constant SELL_TRANS_BURN = 1239;
     
     uint16 constant BUY_TRANS_FEE = 30; // .30 multiple 1E4 Precision
-    uint16 constant TEAM_BUY_TRANS_REWARD = 1667; // 16.67 multiple 1E2 Precisions
-    uint16 constant BUY_TRANS_BURN = 8333;
+    uint16 constant TEAM_BUY_TRANS_REWARD = 6667; // 66.67 multiple 1E2 Precisions
+    uint16 constant BUY_TRANS_BURN = 3333;
     address constant TEAM_ADDRESS = 0xa377433831E83C7a4Fa10fB75C33217cD7CABec2;
     address constant DEVELOPER_ADDRESS = 0x7FF1F8C467114BfBbCC56E406c0Ec21E781bB959;
     
