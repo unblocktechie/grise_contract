@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: --🦉--
+// SPDX-License-Identifier:  --GRISE--
 
 pragma solidity =0.7.6;
 
@@ -590,11 +590,11 @@ contract LiquidityTransformer {
         uint256 _balance = g.totalWeiContributed;
         uint256 _buffer = g.totalTransferTokens + g.totalReferralTokens;
         
-        uint256 _bounty = _buffer.mul(4).div(100);
+        uint256 _bounty = _buffer.mul(5).div(100);
 
         _balance = _balance.sub(
             _teamContribution(
-                _balance.mul(6).div(100)
+                _balance.mul(15).div(100)
             )
         );
 
@@ -602,7 +602,7 @@ contract LiquidityTransformer {
             g.totalWeiContributed
         );
         
-        _bounty = _bounty.add(_buffer.mul(4).div(100));
+        _bounty = _bounty.add(_buffer.mul(5).div(100));
         
 
         GRISE_CONTRACT.mintSupply(
@@ -995,8 +995,8 @@ contract LiquidityTransformer {
         external
         afterUniswapTransfer
     {
-        TEAM_ADDRESS.transfer(TEAM_ETHER.mul(2).div(3));
-        DEV_ADDRESS.transfer(TEAM_ETHER.div(3));
+        TEAM_ADDRESS.transfer(TEAM_ETHER.mul(4).div(5));
+        DEV_ADDRESS.transfer(TEAM_ETHER.div(5));
     }
 
     function notContract(address _addr) internal view returns (bool) {
