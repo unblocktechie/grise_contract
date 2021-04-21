@@ -38,7 +38,6 @@ contract LiquidityTransformer {
     uint128 constant DAILY_MAX_SUPPLY = 12000;
     
     uint256 constant REI_PER_GRISE = 10 ** uint256(18);
-    uint256 constant NUM_RANDOM_BYTES_REQUESTED = 7;
 
     struct Globals {
         uint64 generatedDays;
@@ -76,10 +75,6 @@ contract LiquidityTransformer {
     mapping (uint256 => address) public uniqueInvestors;
     mapping (uint256 => address) public referralAccounts;
 
-    event GeneratingRandomSupply(
-        uint256 indexed investmentDay
-    );
-
     event GeneratedRandomSupply(
         uint256 indexed investmentDay,
         uint256 randomSupply
@@ -90,14 +85,6 @@ contract LiquidityTransformer {
         uint256 staticSupply
     );
 
-    event GenerationStatus(
-        uint64 indexed investmentDay,
-        bool result
-    );
-
-    event LogNewProvableQuery(
-        string description
-    );
 
     event ReferralAdded(
         address indexed referral,
@@ -181,7 +168,6 @@ contract LiquidityTransformer {
         _;
     }
     
-    event Received(address,uint); //DHAVAL
 
     receive() external payable {
         require (
@@ -192,7 +178,6 @@ contract LiquidityTransformer {
             'GRISE: direct deposits disabled'
         );
         
-        emit Received(msg.sender,msg.value); //DHAVAL
     }
 
     function defineToken(
