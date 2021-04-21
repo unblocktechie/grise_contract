@@ -14,7 +14,7 @@ contract LiquidityTransformer {
    
     UniswapRouterV2 public constant UNISWAP_ROUTER = UniswapRouterV2(
         // 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D // mainnet
-         0xf164fC0Ec4E93095b804a4795bBe1e041497b92a // ropsten
+         0xD99D1c33F9fC3444f8101754aBC46c52416550D1 // bsctestnet
       
     );
 
@@ -23,7 +23,7 @@ contract LiquidityTransformer {
     address public TOKEN_DEFINER;
 
     // address constant WETH = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2; // mainnet
-     address constant WETH = 0xc778417E063141139Fce010982780140Aa0cD5Ab; // ropsten
+     address constant WETH = 0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd; // bsctestnet
   
     uint8 constant INVESTMENT_DAYS = 50;
     uint8 constant MAX_DAY_SLOT = 207;
@@ -71,27 +71,9 @@ contract LiquidityTransformer {
     mapping (uint256 => address) public uniqueInvestors;
     mapping (uint256 => address) public referralAccounts;
 
-    event GeneratingRandomSupply(
-        uint256 indexed investmentDay
-    );
-
-    event GeneratedRandomSupply(
-        uint256 indexed investmentDay,
-        uint256 randomSupply
-    );
-
     event GeneratedStaticSupply(
         uint256 indexed investmentDay,
         uint256 staticSupply
-    );
-
-    event GenerationStatus(
-        uint64 indexed investmentDay,
-        bool result
-    );
-
-    event LogNewProvableQuery(
-        string description
     );
 
     event ReferralAdded(
@@ -176,7 +158,6 @@ contract LiquidityTransformer {
         _;
     }
     
-    event Received(address,uint); //DHAVAL
 
     receive() external payable {
         require (
@@ -187,7 +168,6 @@ contract LiquidityTransformer {
             'GRISE: direct deposits disabled'
         );
         
-        emit Received(msg.sender,msg.value); //DHAVAL
     }
 
     function defineToken(
