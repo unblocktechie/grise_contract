@@ -21,7 +21,7 @@ contract LiquidityTransformer {
     );
 
     address payable constant TEAM_ADDRESS = 0xa377433831E83C7a4Fa10fB75C33217cD7CABec2; 
-    address payable constant DEV_ADDRESS = 0x5B38Da6a701c568545dCfcB03FcB875f56beddC4;
+    address payable constant DEV_ADDRESS = 0xcD8DcbA8e4791B19719934886A8bA77EA3fad447;
     address public TOKEN_DEFINER;
 
     // address constant WETH = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2; // mainnet
